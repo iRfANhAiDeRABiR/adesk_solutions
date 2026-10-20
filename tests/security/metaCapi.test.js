@@ -461,3 +461,143 @@ describe('Meta Graph API Network & Mock Dispatch Tests', () => {
     }
   });
 });
+
+import trackingRelayHandler from '../../api/tracking/event.js';
+
+describe('Meta CAPI Upper-Funnel Relay API Tests (/api/tracking/event)', () => {
+  it('should strictly reject public Purchase event requests with 403 Forbidden', async () => {
+    let statusCode = null;
+    let jsonResult = null;
+
+    const mockReq = {
+      method: 'POST',
+      headers: { 'user-agent': 'TestRunner' },
+      body: {
+        eventName: 'Purchase',
+        eventId: 'purchase_fake_attempt_123',
+        customData: { value: 649 }
+      }
+    };
+
+    const mockRes = {
+      status(code) {
+        statusCode = code;
+        return this;
+      },
+      json(data) {
+        jsonResult = data;
+        return this;
+      },
+      setHeader() {}
+    };
+
+    await trackingRelayHandler(mockReq, mockRes);
+
+    assert.strictEqual(statusCode, 403, 'Public relay must strictly forbid Purchase events');
+    assert.ok(jsonResult.error.includes('Forbidden'));
+  });
+
+  it('should accept valid ViewContent event and relay to Meta CAPI', async () => {
+    let statusCode = null;
+    let jsonResult = null;
+
+    const mockReq = {
+      method: 'POST',
+      headers: {
+        'user-agent': 'Chrome/128.0',
+        'x-forwarded-for': '103.145.12.34'
+      },
+      body: {
+        eventName: 'ViewContent',
+        eventId: 'vc_test_12345678',
+        customData: {
+          content_name: 'Autodesk All Apps',
+          value: 649,
+          currency: 'BDT'
+        }
+      }
+    };
+
+    const mockRes = {
+      status(code) {
+        statusCode = code;
+        return this;
+      },
+      json(data) {
+        jsonResult = data;
+        return this;
+      },
+      setHeader() {}
+    };
+
+    await trackingRelayHandler(mockReq, mockRes);
+
+    assert.strictEqual(statusCode, 200);
+    assert.strictEqual(jsonResult.eventName, 'ViewContent');
+    assert.strictEqual(jsonResult.eventId, 'vc_test_12345678');
+  });
+
+  it('should reject invalid event names not in the allowed relay set', async () => {
+    let statusCode = null;
+    let jsonResult = null;
+
+    const mockReq = {
+      method: 'POST',
+      headers: {},
+      body: {
+        eventName: 'ArbitraryCustomSpam',
+        eventId: 'evt_123456'
+      }
+    };
+
+    const mockRes = {
+      status(code) {
+        statusCode = code;
+        return this;
+      },
+      json(data) {
+        jsonResult = data;
+        return this;
+      },
+      setHeader() {}
+    };
+
+    await trackingRelayHandler(mockReq, mockRes);
+
+    assert.strictEqual(statusCode, 400);
+    assert.ok(jsonResult.error.includes('Invalid eventName'));
+  });
+
+  it('should respect marketing tracking consent opt-out', async () => {
+    let statusCode = null;
+    let jsonResult = null;
+
+    const mockReq = {
+      method: 'POST',
+      headers: {},
+      body: {
+        eventName: 'InitiateCheckout',
+        eventId: 'ic_consent_test',
+        consentGranted: false
+      }
+    };
+
+    const mockRes = {
+      status(code) {
+        statusCode = code;
+        return this;
+      },
+      json(data) {
+        jsonResult = data;
+        return this;
+      },
+      setHeader() {}
+    };
+
+    await trackingRelayHandler(mockReq, mockRes);
+
+    assert.strictEqual(statusCode, 200);
+    assert.strictEqual(jsonResult.skipped, true);
+    assert.strictEqual(jsonResult.reason, 'CONSENT_REVOKED');
+  });
+});
