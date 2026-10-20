@@ -76,3 +76,4 @@ describe('Security Test 1: Exposed Secret & Credential Scanning', () => {
     assert.strictEqual(match, null, 'Exposed bot token pattern found in .env.example template');
   });
 });
+

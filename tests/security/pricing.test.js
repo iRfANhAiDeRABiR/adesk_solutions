@@ -57,3 +57,4 @@ describe('Pricing & Discount Integrity Tests', () => {
     assert.strictEqual(nanQty.quantity, 1, 'Malformed quantity must fallback to 1');
   });
 });
+

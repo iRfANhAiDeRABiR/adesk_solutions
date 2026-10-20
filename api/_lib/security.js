@@ -179,3 +179,4 @@ export function checkRateLimit(ipKey, limit = 10, windowMs = 60000) {
   rateLimitMap.set(ipKey, entry);
   return { allowed: true, remaining: limit - entry.count };
 }
+
