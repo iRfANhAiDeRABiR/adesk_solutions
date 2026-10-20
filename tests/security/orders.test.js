@@ -1,9 +1,12 @@
-import { describe, it } from 'node:test';
+import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { OrderStateMachine } from '../../api/_lib/store.js';
 import { generateOrderRef } from '../../api/_lib/security.js';
 
 describe('Order Lifecycle & Payment Integrity Tests', () => {
+  beforeEach(() => {
+    OrderStateMachine.reset();
+  });
   it('Test 8 & 9: Duplicate transaction ID rejection and duplicate order submission', () => {
     const trxId = 'DJTEST9999';
     const order1 = {

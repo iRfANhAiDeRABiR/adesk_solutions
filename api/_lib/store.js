@@ -93,6 +93,21 @@ function savePersistedData() {
 loadPersistedData();
 
 export const OrderStateMachine = {
+  /**
+   * Reset store (primarily for unit tests and environment re-initialization)
+   */
+  reset() {
+    orders.clear();
+    trxIdIndex.clear();
+    capiOutbox.clear();
+    try {
+      const filePath = getStorageFilePath();
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    } catch (e) {}
+  },
+
   STATUS: {
     PENDING: 'PENDING',
     CONFIRMED: 'CONFIRMED',
@@ -109,11 +124,13 @@ export const OrderStateMachine = {
     // Check duplicate TrxID
     if (trxIdIndex.has(cleanTrx)) {
       const existingRef = trxIdIndex.get(cleanTrx);
-      return {
-        success: false,
-        reason: 'DUPLICATE_TRX_ID',
-        error: `This Transaction ID (TrxID) has already been submitted for order ${existingRef}.`
-      };
+      if (existingRef !== refId) {
+        return {
+          success: false,
+          reason: 'DUPLICATE_TRX_ID',
+          error: `This Transaction ID (TrxID) has already been submitted for order ${existingRef}.`
+        };
+      }
     }
 
     const purchaseEventId = orderData.purchaseEventId || `purchase_${refId}`;
