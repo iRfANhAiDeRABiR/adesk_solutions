@@ -4,6 +4,7 @@
  */
 
 import { OrderStateMachine } from '../_lib/store.js';
+import { updateTelegramMessageRemark } from '../_lib/security.js';
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || process.env.VITE_TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET || '';
@@ -89,30 +90,18 @@ export default async function handler(req, res) {
       }).catch(() => {});
     }
 
-    // 6. Update Inline Buttons in Telegram Message
+    // 6. Update Message Text & Inline Buttons in Telegram Message with visible remarks
     if (TELEGRAM_BOT_TOKEN && cb.message?.chat?.id && cb.message?.message_id) {
-      const inline_keyboard = action === 'CONFIRMED'
-        ? [
-            [
-              { text: '✅ Confirmed (যাচাই সম্পন্ন)', callback_data: `confirmed_done_${orderRef}` },
-              { text: '🔄 ভুল হলে Invalid করুন', callback_data: `invalid_${orderRef}` }
-            ]
-          ]
-        : [
-            [
-              { text: '❌ Invalid TrxID (বাতিল)', callback_data: `invalid_done_${orderRef}` },
-              { text: '🔄 সঠিক হলে Confirm করুন', callback_data: `confirm_${orderRef}` }
-            ]
-          ];
-
-      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageReplyMarkup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: cb.message.chat.id,
-          message_id: cb.message.message_id,
-          reply_markup: { inline_keyboard }
-        })
+      const orderRec = OrderStateMachine.getOrder(orderRef);
+      await updateTelegramMessageRemark({
+        botToken: TELEGRAM_BOT_TOKEN,
+        chatId: cb.message.chat.id,
+        messageId: cb.message.message_id,
+        orderRef,
+        action,
+        adminName: cb.from?.username ? `@${cb.from.username}` : (cb.from?.first_name || 'Admin'),
+        originalText: cb.message.text,
+        orderRecord: orderRec
       }).catch(() => {});
     }
 

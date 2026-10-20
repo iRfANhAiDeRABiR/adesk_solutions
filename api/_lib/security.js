@@ -180,3 +180,118 @@ export function checkRateLimit(ipKey, limit = 10, windowMs = 60000) {
   return { allowed: true, remaining: limit - entry.count };
 }
 
+/**
+ * Updates an existing Telegram order notification message with a visible remark
+ * and interactive toggle buttons when an admin clicks Confirm or Invalid.
+ */
+export async function updateTelegramMessageRemark({
+  botToken,
+  chatId,
+  messageId,
+  orderRef,
+  action,
+  adminName,
+  originalText,
+  orderRecord
+}) {
+  if (!botToken || !chatId || !messageId) return false;
+
+  const isConfirm = action === 'CONFIRMED';
+  const timeStr = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Dhaka' });
+  const adminLabel = adminName ? escapeTelegramHtml(adminName) : 'Administrator';
+
+  const statusRemarkBlock = isConfirm
+    ? `Status: ✅ <b>CONFIRMED (বৈধ পেমেন্ট - অর্ডার কনফার্মড)</b>\n📝 <b>Remark:</b> Payment Verified & Approved by <b>${adminLabel}</b> at ${timeStr}`
+    : `Status: ❌ <b>INVALID (ভুল ট্রানজেকশন আইডি - বাতিল)</b>\n📝 <b>Remark:</b> Rejected as Invalid TrxID by <b>${adminLabel}</b> at ${timeStr}`;
+
+  const inline_keyboard = isConfirm
+    ? [
+        [
+          { text: '✅ Confirmed (যাচাই সম্পন্ন)', callback_data: `confirmed_done_${orderRef}` },
+          { text: '🔄 ভুল হলে Invalid করুন', callback_data: `invalid_${orderRef}` }
+        ]
+      ]
+    : [
+        [
+          { text: '❌ Invalid TrxID (বাতিল)', callback_data: `invalid_done_${orderRef}` },
+          { text: '🔄 সঠিক হলে Confirm করুন', callback_data: `confirm_${orderRef}` }
+        ]
+      ];
+
+  let newText = '';
+
+  if (orderRecord) {
+    const couponLine = orderRecord.couponApplied
+      ? `\n🏷️ <b>Coupon:</b> <code>${escapeTelegramHtml(orderRecord.couponApplied)}</code> (-10%, saved ৳ ${orderRecord.discountAmount})`
+      : '';
+
+    newText = `
+${isConfirm ? '✅' : '❌'} <b>SOFTWARE SOLUTIONS BD ORDER — ${isConfirm ? 'CONFIRMED' : 'INVALID'}</b>
+━━━━━━━━━━━━━━━━━━━━━
+📋 <b>Order Ref:</b> <code>${escapeTelegramHtml(orderRecord.refId)}</code>
+👤 <b>Customer:</b> <b>${escapeTelegramHtml(orderRecord.name)}</b>
+📧 <b>Delivery Email:</b> <code>${escapeTelegramHtml(orderRecord.email)}</code>
+📱 <b>Customer Phone:</b> <code>${escapeTelegramHtml(orderRecord.phone)}</code>
+━━━━━━━━━━━━━━━━━━━━━
+📦 <b>Product:</b> ${escapeTelegramHtml(orderRecord.product || 'Autodesk All Apps')}
+⏳ <b>Duration:</b> ${escapeTelegramHtml(orderRecord.duration)}
+🪑 <b>Seats/Qty:</b> ${escapeTelegramHtml(orderRecord.quantity)} Seat(s)
+💰 <b>Total Amount:</b> <b>${escapeTelegramHtml(orderRecord.displayPrice)}</b>${couponLine}
+━━━━━━━━━━━━━━━━━━━━━
+💳 <b>Payment Gateway:</b> <b>${escapeTelegramHtml(orderRecord.paymentMethod)}</b>
+📤 <b>Sender Number:</b> <code>${escapeTelegramHtml(orderRecord.senderNumber)}</code>
+🔑 <b>Transaction ID:</b> <code>${escapeTelegramHtml(orderRecord.trxId)}</code>
+⏰ <b>Order Time:</b> ${orderRecord.createdAt ? new Date(orderRecord.createdAt).toLocaleString('en-GB', { timeZone: 'Asia/Dhaka' }) : timeStr}
+━━━━━━━━━━━━━━━━━━━━━
+${statusRemarkBlock}
+    `.trim();
+  } else if (originalText) {
+    const baseText = originalText.split(/Status:\s*⏳/i)[0]
+      .split(/Status:\s*✅/i)[0]
+      .split(/Status:\s*❌/i)[0]
+      .trim();
+
+    newText = `
+${isConfirm ? '✅' : '❌'} <b>SOFTWARE SOLUTIONS BD ORDER — ${isConfirm ? 'CONFIRMED' : 'INVALID'}</b>
+${baseText.replace(/^[^\n]*\n/, '')}
+━━━━━━━━━━━━━━━━━━━━━
+${statusRemarkBlock}
+    `.trim();
+  } else {
+    newText = `
+${isConfirm ? '✅' : '❌'} <b>SOFTWARE SOLUTIONS BD ORDER #${escapeTelegramHtml(orderRef)}</b>
+━━━━━━━━━━━━━━━━━━━━━
+${statusRemarkBlock}
+    `.trim();
+  }
+
+  try {
+    const editRes = await fetch(`https://api.telegram.org/bot${botToken}/editMessageText`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        message_id: messageId,
+        text: newText,
+        parse_mode: 'HTML',
+        reply_markup: { inline_keyboard }
+      })
+    });
+    const editData = await editRes.json();
+    if (!editData.ok) {
+      await fetch(`https://api.telegram.org/bot${botToken}/editMessageReplyMarkup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          message_id: messageId,
+          reply_markup: { inline_keyboard }
+        })
+      }).catch(() => {});
+    }
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+

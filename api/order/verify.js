@@ -6,7 +6,7 @@
 
 import fs from 'node:fs';
 import { OrderStateMachine } from '../_lib/store.js';
-import { checkRateLimit } from '../_lib/security.js';
+import { checkRateLimit, updateTelegramMessageRemark } from '../_lib/security.js';
 
 function getTelegramConfig() {
   let token = process.env.TELEGRAM_BOT_TOKEN || process.env.VITE_TELEGRAM_BOT_TOKEN || '';
@@ -172,6 +172,22 @@ async function syncStatusFromTelegram(targetRef, botToken, allowedIds) {
             })
           });
         } catch (e) {}
+
+        // Update Telegram message text and buttons with visible remark
+        if (cb.message?.chat?.id && cb.message?.message_id) {
+          const action = isConfirm ? 'CONFIRMED' : 'INVALID';
+          const orderRec = OrderStateMachine.getOrder(targetRef);
+          await updateTelegramMessageRemark({
+            botToken,
+            chatId: cb.message.chat.id,
+            messageId: cb.message.message_id,
+            orderRef: targetRef,
+            action,
+            adminName: cb.from?.username ? `@${cb.from.username}` : (cb.from?.first_name || 'Admin'),
+            originalText: cb.message.text,
+            orderRecord: orderRec
+          }).catch(() => {});
+        }
 
         return {
           status: isConfirm ? 'CONFIRMED' : 'INVALID',
