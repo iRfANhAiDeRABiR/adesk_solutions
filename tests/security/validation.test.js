@@ -68,7 +68,7 @@ describe('Input Validation & Sanitization Security Tests', () => {
     });
     assert.strictEqual(bkashWrongLength.isValid, false, 'bKash TrxID with wrong length must be rejected');
 
-    // Nagad: Must be 8 characters
+    // Nagad: 8-12 characters
     const nagadInvalid = validateOrderInput({
       ...validBaseOrder,
       paymentMethod: 'Nagad',
@@ -76,13 +76,27 @@ describe('Input Validation & Sanitization Security Tests', () => {
     });
     assert.strictEqual(nagadInvalid.isValid, false, 'Nagad TrxID under 8 characters must be rejected');
 
-    // Rocket: Must be 8-12 characters
+    const nagadValid = validateOrderInput({
+      ...validBaseOrder,
+      paymentMethod: 'Nagad',
+      trxId: '72AK94X2'
+    });
+    assert.strictEqual(nagadValid.isValid, true, 'Valid Nagad TrxID must be accepted');
+
+    // Rocket: 6-12 characters
     const rocketInvalid = validateOrderInput({
       ...validBaseOrder,
       paymentMethod: 'Rocket',
       trxId: 'RC123'
     });
-    assert.strictEqual(rocketInvalid.isValid, false, 'Rocket TrxID under 8 characters must be rejected');
+    assert.strictEqual(rocketInvalid.isValid, false, 'Rocket TrxID under 6 characters must be rejected');
+
+    const rocketValid = validateOrderInput({
+      ...validBaseOrder,
+      paymentMethod: 'Rocket',
+      trxId: '2938471928'
+    });
+    assert.strictEqual(rocketValid.isValid, true, 'Valid Rocket TrxID must be accepted');
   });
 
   it('Test 21: 404 error page & scanner bot protection verification', () => {

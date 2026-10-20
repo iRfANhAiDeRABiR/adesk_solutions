@@ -22,8 +22,8 @@ export const AUTHORIZED_COUPONS = {
 // Strict TrxID validation patterns per payment provider
 export const TRX_PATTERNS = {
   Bkash: /^DJ[A-Z0-9]{8}$/i,     // 10 chars, starts with DJ (e.g. DJ1A2B3C4D)
-  Nagad: /^[A-Z0-9]{8}$/i,        // 8 chars alphanumeric
-  Rocket: /^[A-Z0-9]{8,12}$/i     // 8 to 12 chars alphanumeric
+  Nagad: /^[A-Z0-9]{8,12}$/i,    // 8 to 12 chars alphanumeric
+  Rocket: /^[A-Z0-9]{6,12}$/i    // 6 to 12 chars alphanumeric
 };
 
 // Bangladeshi Phone Number validation (11 digits: 013-019 or +88013-019)
@@ -117,9 +117,9 @@ export function validateOrderInput(input) {
     if (paymentMethod === 'Bkash') {
       errors.push('bKash TrxID must be exactly 10 alphanumeric characters starting with DJ (e.g. DJ1A2B3C4D).');
     } else if (paymentMethod === 'Nagad') {
-      errors.push('Nagad TrxID must be exactly 8 alphanumeric characters.');
+      errors.push('Nagad TrxID must be 8 to 12 alphanumeric characters.');
     } else {
-      errors.push('Rocket TrxID must be 8 to 12 alphanumeric characters.');
+      errors.push('Rocket TrxID must be 6 to 12 alphanumeric characters.');
     }
   }
 

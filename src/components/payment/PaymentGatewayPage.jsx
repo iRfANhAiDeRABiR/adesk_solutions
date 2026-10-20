@@ -153,8 +153,8 @@ export default function PaymentGatewayPage({ order, onCancel }) {
       }
     } else {
       // Rocket or fallback
-      if (!cleanTrx || cleanTrx.length < 6) {
-        setError('দয়া করে সঠিক Transaction ID (TrxID) লিখুন');
+      if (!cleanTrx || cleanTrx.length < 6 || cleanTrx.length > 12) {
+        setError('দয়া করে সঠিক রকেট Transaction ID (TrxID) লিখুন (৬ থেকে ১২ অক্ষর)।');
         return;
       }
     }
