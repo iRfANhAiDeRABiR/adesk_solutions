@@ -2,6 +2,7 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import submitHandler from './api/order/submit.js';
 import verifyHandler from './api/order/verify.js';
+import trackingHandler from './api/tracking/event.js';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -40,6 +41,37 @@ export default defineConfig(({ mode }) => {
                   await submitHandler(req, mockRes);
                 } catch (err) {
                   console.error('[Vite Dev API Error /api/order/submit]:', err);
+                  res.statusCode = 500;
+                  res.setHeader('Content-Type', 'application/json');
+                  res.end(JSON.stringify({ success: false, error: err.message }));
+                }
+              });
+              return;
+            }
+
+            if (parsedUrl.pathname === '/api/tracking/event') {
+              let body = '';
+              req.on('data', chunk => { body += chunk; });
+              req.on('end', async () => {
+                try {
+                  req.body = body ? JSON.parse(body) : {};
+                } catch (e) {
+                  req.body = {};
+                }
+                const mockRes = {
+                  statusCode: 200,
+                  headers: {},
+                  status(code) { this.statusCode = code; res.statusCode = code; return this; },
+                  setHeader(k, v) { this.headers[k] = v; res.setHeader(k, v); return this; },
+                  json(data) {
+                    res.setHeader('Content-Type', 'application/json');
+                    res.statusCode = this.statusCode || 200;
+                    res.end(JSON.stringify(data));
+                  }
+                };
+                try {
+                  await trackingHandler(req, mockRes);
+                } catch (err) {
                   res.statusCode = 500;
                   res.setHeader('Content-Type', 'application/json');
                   res.end(JSON.stringify({ success: false, error: err.message }));

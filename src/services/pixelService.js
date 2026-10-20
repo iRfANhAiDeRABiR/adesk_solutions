@@ -57,6 +57,41 @@ export const getBrowserFbcCookie = () => {
 };
 
 /**
+ * Generates a stable unique event ID for browser/server deduplication
+ */
+export const generateEventId = (prefix = 'evt') => {
+  const ts = Date.now();
+  const rnd = Math.random().toString(36).substring(2, 9);
+  return `${prefix}_${ts}_${rnd}`;
+};
+
+/**
+ * Concurrently relays upper-funnel events to the secure serverless CAPI endpoint
+ * (/api/tracking/event) for server-side recording with matching eventID.
+ */
+export const relayEventToCapi = async (payload) => {
+  try {
+    if (typeof window === 'undefined') return;
+    if (!isConsentGranted()) return;
+
+    const bodyStr = JSON.stringify(payload);
+    if (navigator.sendBeacon) {
+      const blob = new Blob([bodyStr], { type: 'application/json' });
+      navigator.sendBeacon('/api/tracking/event', blob);
+    } else {
+      fetch('/api/tracking/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: bodyStr,
+        keepalive: true
+      }).catch(() => {});
+    }
+  } catch (e) {
+    // Non-fatal tracking relay error
+  }
+};
+
+/**
  * Initializes the official Meta Pixel base tracking script
  */
 export const initFacebookPixel = () => {
@@ -93,24 +128,24 @@ export const initFacebookPixel = () => {
 
 /**
  * Safe wrapper to send standard or custom Meta Pixel and Google Tag Manager conversion events
- * Supports eventID for Meta Pixel + CAPI deduplication
+ * Supports eventID for Meta Pixel + CAPI deduplication across all 5 events
  */
 export const trackPixelEvent = (eventName, params = {}, options = {}) => {
   if (typeof window === 'undefined') return;
   if (!isConsentGranted()) return;
 
-  const eventID = options.eventID || params.eventID;
+  const eventID = options.eventID || params.eventID || generateEventId(eventName.toLowerCase());
 
   // Console logging for verification
   console.log(
-    `%c[Meta Pixel Event Fired] %c${eventName}`,
+    `%c[Meta Event Fired] %c${eventName}`,
     'color: #06b6d4; font-weight: bold;',
     'color: #10b981; font-weight: bold;',
     params,
     eventID ? { eventID } : ''
   );
 
-  // 1. Meta (Facebook) Pixel Event
+  // 1. Meta (Facebook) Pixel Event (Browser)
   if (window.fbq) {
     if (eventID) {
       window.fbq('track', eventName, params, { eventID });
@@ -132,6 +167,24 @@ export const trackPixelEvent = (eventName, params = {}, options = {}) => {
   } catch (err) {
     // Silent fail if dataLayer isn't available
   }
+
+  // 3. Meta Conversions API (CAPI) Server Relay for Upper-Funnel Events
+  // (Purchase events are strictly generated server-side upon verified admin confirmation)
+  if (eventName !== 'Purchase' && eventName !== 'PageView') {
+    relayEventToCapi({
+      eventName,
+      eventId: eventID,
+      eventSourceUrl: window.location.href,
+      userData: {
+        email: options.email,
+        phone: options.phone,
+        fbp: getBrowserFbpCookie(),
+        fbc: getBrowserFbcCookie()
+      },
+      customData: params,
+      consentGranted: isConsentGranted()
+    });
+  }
 };
 
 // =========================================================================
@@ -147,49 +200,78 @@ export const trackPageView = () => {
 
 /**
  * 2. Track Product / Subscription View (ViewContent)
+ * Dispatched to both Browser Pixel and Server CAPI with shared eventID
  */
 export const trackViewContent = (productName, price) => {
   const numericPrice = typeof price === 'number' ? price : (parseFloat(String(price).replace(/[^0-9.]/g, '')) || 649);
-  trackPixelEvent('ViewContent', {
-    content_name: productName || 'Autodesk All Apps',
-    content_category: 'Software Subscription',
-    content_ids: ['AUTODESK-ALL-APPS'],
-    content_type: 'product',
-    value: numericPrice,
-    currency: 'BDT'
-  });
+  const eventID = generateEventId('vc');
+
+  trackPixelEvent(
+    'ViewContent',
+    {
+      content_name: productName || 'Autodesk All Apps',
+      content_category: 'Software Subscription',
+      content_ids: ['AUTODESK-ALL-APPS'],
+      content_type: 'product',
+      value: numericPrice,
+      currency: 'BDT'
+    },
+    { eventID }
+  );
 };
 
 /**
  * 3. Track Checkout Initiation (InitiateCheckout)
+ * Dispatched to both Browser Pixel and Server CAPI with shared eventID
  */
 export const trackInitiateCheckout = (orderPayload) => {
   const numericPrice = typeof orderPayload?.rawPrice === 'string'
     ? parseFloat(orderPayload.rawPrice.replace(/[^0-9.]/g, ''))
     : (orderPayload?.price || 649);
 
-  trackPixelEvent('InitiateCheckout', {
-    content_name: orderPayload?.product || 'Autodesk All Apps',
-    content_ids: ['AUTODESK-ALL-APPS'],
-    content_type: 'product',
-    num_items: Number(orderPayload?.quantity) || 1,
-    value: numericPrice,
-    currency: 'BDT'
-  });
+  const eventID = generateEventId('ic');
+
+  trackPixelEvent(
+    'InitiateCheckout',
+    {
+      content_name: orderPayload?.product || 'Autodesk All Apps',
+      content_ids: ['AUTODESK-ALL-APPS'],
+      content_type: 'product',
+      num_items: Number(orderPayload?.quantity) || 1,
+      value: numericPrice,
+      currency: 'BDT'
+    },
+    {
+      eventID,
+      email: orderPayload?.email,
+      phone: orderPayload?.phone
+    }
+  );
 };
 
 /**
  * 4. Track Payment Information Milestone (AddPaymentInfo)
  * Called strictly once per user payment method completion
+ * Dispatched to both Browser Pixel and Server CAPI with shared eventID
  */
-export const trackAddPaymentInfo = (gatewayName, price) => {
+export const trackAddPaymentInfo = (gatewayName, price, customerInfo = {}) => {
   const numericPrice = typeof price === 'number' ? price : (parseFloat(String(price || 649).replace(/[^0-9.]/g, '')) || 649);
-  trackPixelEvent('AddPaymentInfo', {
-    content_category: 'Payment Gateway',
-    payment_method: gatewayName || 'Bkash',
-    value: numericPrice,
-    currency: 'BDT'
-  });
+  const eventID = generateEventId('api');
+
+  trackPixelEvent(
+    'AddPaymentInfo',
+    {
+      content_category: 'Payment Gateway',
+      payment_method: gatewayName || 'Bkash',
+      value: numericPrice,
+      currency: 'BDT'
+    },
+    {
+      eventID,
+      email: customerInfo.email,
+      phone: customerInfo.phone
+    }
+  );
 };
 
 // Set to prevent duplicate Purchase events from firing multiple times in browser
@@ -231,10 +313,17 @@ export const trackPurchase = (orderPayload, options = {}) => {
 
 /**
  * Track Customer Support Contact (Contact)
+ * Dispatched to both Browser Pixel and Server CAPI with shared eventID
  */
 export const trackContact = (channel = 'WhatsApp') => {
-  trackPixelEvent('Contact', {
-    content_name: `${channel} Support`,
-    channel: channel
-  });
+  const eventID = generateEventId('contact');
+
+  trackPixelEvent(
+    'Contact',
+    {
+      content_name: `${channel} Support`,
+      channel: channel
+    },
+    { eventID }
+  );
 };
