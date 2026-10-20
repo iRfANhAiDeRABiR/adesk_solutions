@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { MessageCircle, X, Send } from 'lucide-react';
+import { trackContact } from '../services/pixelService';
 
 export default function FloatingContactButton() {
   const { t } = useLanguage();
@@ -43,6 +44,7 @@ export default function FloatingContactButton() {
             href={`https://wa.me/${whatsappNumber}`}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackContact('Floating_WhatsApp')}
             className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors shadow-md"
           >
             <Send className="w-3.5 h-3.5" />

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { ShieldAlert, Home, ArrowRight, MessageCircle, Lock, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
-import { trackPixelEvent } from '../services/pixelService';
+import { trackPixelEvent, trackContact } from '../services/pixelService';
 import Logo from './common/Logo';
 
 export default function NotFoundPage({ onGoHome }) {
@@ -117,6 +117,7 @@ export default function NotFoundPage({ onGoHome }) {
               href="https://wa.me/639552506023"
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackContact('404_WhatsApp')}
               className="inline-flex items-center gap-1.5 text-cyan-400 hover:text-cyan-300 transition-colors font-medium"
             >
               <MessageCircle className="w-3.5 h-3.5" />

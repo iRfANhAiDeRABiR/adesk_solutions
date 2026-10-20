@@ -1,7 +1,7 @@
 // Meta (Facebook) Pixel Service for Software Solutions BD Ads Tracking
 // Add your Pixel ID to .env: VITE_FB_PIXEL_ID=your_pixel_id
 
-export const FB_PIXEL_ID = import.meta.env.VITE_FB_PIXEL_ID || "";
+export const FB_PIXEL_ID = import.meta.env.VITE_FB_PIXEL_ID || "6925345297741031";
 
 /**
  * Initializes the official Meta Pixel base tracking script
@@ -34,7 +34,6 @@ export const initFacebookPixel = () => {
 
   if (FB_PIXEL_ID) {
     window.fbq('init', FB_PIXEL_ID);
-    window.fbq('track', 'PageView');
   }
 };
 
