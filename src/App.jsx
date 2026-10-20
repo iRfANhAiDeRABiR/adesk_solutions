@@ -52,7 +52,7 @@ function LandingPage() {
         {/* 8. Pre-Order Common Doubts & Buyer Transparency Section */}
         <PreOrderDoubts />
 
-        {/* 9. Why Ecosafeguard Technology */}
+        {/* 9. Why Software Solutions BD */}
         <WhyChooseUs />
 
         {/* 10. How to Order (4-Step Installation Guide & Replacement Guarantee on White BG) */}
@@ -104,18 +104,34 @@ function AppContent() {
   }, []);
 
   const handleGoHome = (targetHash = '') => {
-    if (window.location.pathname !== '/' && window.location.pathname !== '') {
-      window.history.pushState({}, '', '/' + targetHash);
+    const basePath = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
+    const rootUrl = basePath || '/';
+    if (window.location.pathname !== '/' && window.location.pathname !== rootUrl) {
+      window.history.pushState({}, '', rootUrl + (targetHash ? targetHash : ''));
     } else {
       window.location.hash = targetHash;
     }
-    setCurrentPath('/');
+    setCurrentPath(rootUrl);
     setCurrentHash(targetHash);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // 404 Route Protection: Any route other than / or /index.html is a 404
-  const is404 = currentPath !== '/' && currentPath !== '/index.html' && currentPath !== '';
+  // 404 Route Protection: Recognizes root, index.html, and repository subpaths
+  const basePath = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
+  const cleanPath = (currentPath || '').replace(/\/+$/, '');
+  const validRootPaths = [
+    '',
+    '/',
+    '/index.html',
+    basePath,
+    `${basePath}/index.html`,
+    '/project_03',
+    '/project_03/index.html'
+  ].map(p => p.toLowerCase());
+
+  const is404 = !validRootPaths.includes(cleanPath.toLowerCase()) && 
+                cleanPath !== '' && 
+                !cleanPath.endsWith('/index.html');
 
   if (is404) {
     return <NotFoundPage onGoHome={handleGoHome} />;

@@ -680,8 +680,8 @@ export const allProducts = [
   {
     id: "endpoint-cyber-protect",
     categoryId: "security-protection",
-    name: "Ecosafeguard Endpoint Shield Pro",
-    nameBn: "ইকোসেফগার্ড এন্ডপয়েন্ট শিল্ড প্রো",
+    name: "Software Solutions Endpoint Shield Pro",
+    nameBn: "সফটওয়্যার সলিউশন এন্ডপয়েন্ট শিল্ড প্রো",
     tagline: "Next-Gen Antivirus & Enterprise Threat Detection",
     taglineBn: "নেক্সট-জেন অ্যান্টিভাইরাস ও এন্টারপ্রাইজ থ্রেট প্রটেকশন",
     description: "Comprehensive corporate security against trojans, zero-day exploits, rootkits, and unauthorized data leakage.",

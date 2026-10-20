@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BkashLogo, NagadLogo, RocketLogo } from '../common/PaymentLogos';
 import {
   sendOrderToTelegram,
@@ -89,6 +89,12 @@ export default function PaymentGatewayPage({ order, onCancel }) {
   const [isCheckingLive, setIsCheckingLive] = useState(false);
   const [lastCheckTime, setLastCheckTime] = useState(null);
 
+  // Active refs for interval timers and status tracking
+  const lastSubmittedPayloadRef = useRef(null);
+  const verificationStatusRef = useRef('PENDING');
+  verificationStatusRef.current = verificationStatus;
+  const reminderTimerRef = useRef(null);
+
   const handleCopy = (text, fieldName) => {
     navigator.clipboard.writeText(text);
     setCopiedField(fieldName);
@@ -146,7 +152,7 @@ export default function PaymentGatewayPage({ order, onCancel }) {
     }
     setError('');
 
-    const targetRef = activeRefId || order?.refId || `ECO-ATD-${Math.floor(100000 + Math.random() * 900000)}`;
+    const targetRef = activeRefId || order?.refId || `SOFT-ATD-${Math.floor(100000 + Math.random() * 900000)}`;
     if (!activeRefId) setActiveRefId(targetRef);
 
     // Prepare complete sanitized payload ready for Telegram Bot
@@ -158,8 +164,8 @@ export default function PaymentGatewayPage({ order, onCancel }) {
       product: order?.product || "Autodesk All Apps",
       duration: order?.duration || "1 Year",
       quantity: order?.quantity || 1,
-      totalPrice: order?.totalPrice || "৳ 699",
-      rawPrice: order?.rawPrice || order?.totalPrice || "699",
+      totalPrice: order?.totalPrice || "৳ 649",
+      rawPrice: order?.rawPrice || order?.totalPrice || "649",
       paymentMethod: method,
       senderNumber: cleanSender,
       receiverNumber: currentGateway.receiverNumber,
@@ -170,10 +176,14 @@ export default function PaymentGatewayPage({ order, onCancel }) {
 
     // Store in localStorage for status lookup / persistence
     try {
-      localStorage.setItem('ecosafeguard_last_submission', JSON.stringify(customerPayload));
+      localStorage.setItem('softwaresolutions_last_submission', JSON.stringify(customerPayload));
     } catch (err) {
       console.warn("Storage error", err);
     }
+
+    // Cache in memory ref for recurring reminders
+    lastSubmittedPayloadRef.current = customerPayload;
+    verificationStatusRef.current = 'PENDING';
 
     trackPurchase(customerPayload);
     setVerificationStatus('PENDING');
@@ -207,7 +217,12 @@ export default function PaymentGatewayPage({ order, onCancel }) {
           setLastCheckTime(new Date());
           if (res && (res.status === 'CONFIRMED' || res.status === 'INVALID')) {
             setVerificationStatus(res.status);
+            verificationStatusRef.current = res.status;
             setVerificationDetails(res);
+            if (reminderTimerRef.current) {
+              clearInterval(reminderTimerRef.current);
+              reminderTimerRef.current = null;
+            }
           }
         }
       } catch (e) {
@@ -228,6 +243,125 @@ export default function PaymentGatewayPage({ order, onCancel }) {
       clearInterval(interval);
     };
   }, [step, activeRefId, order?.refId]);
+
+  // Recurring reminder: If no action (Confirm/Invalid) is taken on Telegram, resend alert every 15s for up to 2 mins
+  useEffect(() => {
+    // Only run on Step 3 and while status is PENDING
+    if (step !== 3 || verificationStatus !== 'PENDING') {
+      if (reminderTimerRef.current) {
+        clearInterval(reminderTimerRef.current);
+        reminderTimerRef.current = null;
+      }
+      return;
+    }
+
+    const ref = activeRefId || order?.refId;
+    if (!ref) return;
+
+    let reminderCount = 0;
+    const maxReminders = 8; // 8 * 15s = 120s (2 minutes)
+    const reminderIntervalMs = 15000; // 15 seconds
+
+    console.log(`⏱️ [Telegram Reminder Service Started] Waiting for admin action on order #${ref}. Will remind every 15s for up to 2 mins.`);
+
+    if (reminderTimerRef.current) {
+      clearInterval(reminderTimerRef.current);
+    }
+
+    reminderTimerRef.current = setInterval(async () => {
+      // 1. If admin confirmed or marked invalid, stop reminders immediately
+      if (verificationStatusRef.current !== 'PENDING') {
+        console.log(`✅ [Telegram Reminder Stopped] Order status is ${verificationStatusRef.current}`);
+        if (reminderTimerRef.current) {
+          clearInterval(reminderTimerRef.current);
+          reminderTimerRef.current = null;
+        }
+        return;
+      }
+
+      // 2. Check live status from Telegram before sending reminder
+      try {
+        const liveCheck = await checkOrderStatusFromTelegram(ref);
+        if (liveCheck && (liveCheck.status === 'CONFIRMED' || liveCheck.status === 'INVALID')) {
+          console.log(`✅ [Telegram Reminder Stopped] Live status detected: ${liveCheck.status}`);
+          setVerificationStatus(liveCheck.status);
+          verificationStatusRef.current = liveCheck.status;
+          setVerificationDetails(liveCheck);
+          if (reminderTimerRef.current) {
+            clearInterval(reminderTimerRef.current);
+            reminderTimerRef.current = null;
+          }
+          return;
+        }
+      } catch (err) {
+        console.warn("Live status check before reminder encountered error:", err);
+      }
+
+      // 3. If max 2 minutes elapsed (8 reminders), stop
+      if (reminderCount >= maxReminders) {
+        console.log(`🛑 [Telegram Reminder Ended] 2 minutes limit reached for order #${ref}`);
+        if (reminderTimerRef.current) {
+          clearInterval(reminderTimerRef.current);
+          reminderTimerRef.current = null;
+        }
+        return;
+      }
+
+      // 4. Resolve order payload from memory ref, localStorage, or fallback
+      const payload = lastSubmittedPayloadRef.current || (() => {
+        try {
+          const saved = localStorage.getItem('softwaresolutions_last_submission') || localStorage.getItem('ecosafeguard_last_submission');
+          return saved ? JSON.parse(saved) : null;
+        } catch (e) {
+          return null;
+        }
+      })() || {
+        refId: ref,
+        name: order?.name || 'Customer',
+        email: order?.email || '',
+        phone: senderNumber || order?.phone || '',
+        product: order?.product || "Autodesk All Apps",
+        duration: order?.duration || "1 Year",
+        quantity: order?.quantity || 1,
+        totalPrice: order?.totalPrice || "৳ 649",
+        paymentMethod: method,
+        senderNumber: senderNumber,
+        receiverNumber: currentGateway.receiverNumber,
+        trxId: trxId,
+        status: "PENDING_VERIFICATION",
+        submittedAt: new Date().toISOString()
+      };
+
+      reminderCount++;
+      console.log(`📨 [Telegram Reminder #${reminderCount}/${maxReminders}] Resending alert for #${ref}...`);
+
+      try {
+        const res = await sendOrderToTelegram(payload, {
+          isReminder: true,
+          reminderIndex: reminderCount,
+          maxReminders: maxReminders
+        });
+        console.log(`📬 [Telegram Reminder #${reminderCount}] Result:`, res);
+      } catch (err) {
+        console.error(`❌ [Telegram Reminder #${reminderCount}] Error:`, err);
+      }
+
+      if (reminderCount >= maxReminders) {
+        if (reminderTimerRef.current) {
+          clearInterval(reminderTimerRef.current);
+          reminderTimerRef.current = null;
+        }
+      }
+    }, reminderIntervalMs);
+
+    return () => {
+      if (reminderTimerRef.current) {
+        clearInterval(reminderTimerRef.current);
+        reminderTimerRef.current = null;
+      }
+    };
+  }, [step, verificationStatus, activeRefId, order?.refId]);
+
 
   // Manual refresh trigger
   const handleManualCheck = async () => {
@@ -258,14 +392,14 @@ export default function PaymentGatewayPage({ order, onCancel }) {
     if (result) {
       setCustomChatId(result.chatId);
       // Retry sending current order
-      const saved = localStorage.getItem('ecosafeguard_last_submission');
+      const saved = localStorage.getItem('softwaresolutions_last_submission');
       if (saved) {
         setTelegramStatus('sending');
         const res = await sendOrderToTelegram(JSON.parse(saved));
         setTelegramStatus(res.success ? 'sent' : 'failed');
       }
     } else {
-      alert("Please open t.me/ecosafeguard_bot in Telegram, tap Start or send a message, then click this button again!");
+      alert("Please open t.me/Notification_SolutionsBD_bot in Telegram, tap Start, then click this button again!");
     }
   };
 
@@ -287,18 +421,24 @@ export default function PaymentGatewayPage({ order, onCancel }) {
             </div>
             <div className="w-full flex items-center justify-between pt-2 border-t border-slate-100">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
-                  ES
-                </div>
+                <img 
+                  src="/logo-icon.png" 
+                  alt="Software Solutions BD" 
+                  className="w-8 h-8 object-contain"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = "/logo.png";
+                  }}
+                />
                 <div>
-                  <div className="text-xs font-bold text-slate-900">Ecosafeguard Technology</div>
-                  <div className="text-[10px] text-slate-500 font-mono">Invoice: {order?.refId || "ECO-ATD-81923"}</div>
+                  <div className="text-xs font-bold text-slate-900">Software Solutions BD</div>
+                  <div className="text-[10px] text-slate-500 font-mono">Invoice: {order?.refId || "SOFT-ATD-81923"}</div>
                 </div>
               </div>
               <div className="text-right">
                 <span className="text-[10px] text-slate-400 block font-medium">Amount</span>
                 <span className="text-base sm:text-lg font-black text-[#e2136e] font-mono">
-                  {order?.totalPrice || "৳ 699"}
+                  {order?.totalPrice || "৳ 649"}
                 </span>
               </div>
             </div>
@@ -310,14 +450,14 @@ export default function PaymentGatewayPage({ order, onCancel }) {
             <div className="flex items-center gap-2">
               <NagadLogo className="w-8 h-8 bg-white p-1 rounded-full" />
               <div>
-                <div className="text-xs font-bold text-white tracking-wide">Ecosafeguard Technology</div>
-                <div className="text-[10px] text-red-200 font-mono">Invoice: {order?.refId || "ECO-ATD-81923"}</div>
+                <div className="text-xs font-bold text-white tracking-wide">Software Solutions BD</div>
+                <div className="text-[10px] text-red-200 font-mono">Invoice: {order?.refId || "SOFT-ATD-81923"}</div>
               </div>
             </div>
             <div className="text-right">
               <div className="text-[10px] text-red-200 uppercase font-semibold">Total Amount</div>
               <div className="text-base sm:text-lg font-black font-mono text-white">
-                {order?.totalPrice || "৳ 699"}
+                {order?.totalPrice || "৳ 649"}
               </div>
             </div>
           </div>
@@ -330,11 +470,11 @@ export default function PaymentGatewayPage({ order, onCancel }) {
                 <RocketLogo className="w-8 h-8 bg-white p-1 rounded-full" />
                 <div>
                   <div className="text-xs font-bold text-white">ডাচ-বাংলা ব্যাংক রকেট (Rocket)</div>
-                  <div className="text-[10px] text-purple-200">Ecosafeguard Technology</div>
+                  <div className="text-[10px] text-purple-200">Software Solutions BD &bull; Invoice: {order?.refId || "SOFT-ATD-81923"}</div>
                 </div>
               </div>
               <span className="text-base sm:text-lg font-black font-mono text-white">
-                {order?.totalPrice || "৳ 699"}
+                {order?.totalPrice || "৳ 649"}
               </span>
             </div>
             <div className="text-[10px] text-purple-100 flex items-center justify-between border-t border-purple-400/30 pt-1.5">
@@ -507,12 +647,12 @@ export default function PaymentGatewayPage({ order, onCancel }) {
                       Exact Amount to Send
                     </span>
                     <span className="text-lg sm:text-xl font-black font-mono text-emerald-700">
-                      {order?.totalPrice || "৳ 699"}
+                      {order?.totalPrice || "৳ 649"}
                     </span>
                   </div>
                   <button
                     type="button"
-                    onClick={() => handleCopy((order?.totalPrice || "699").replace(/[^\d]/g, ''), 'amount')}
+                    onClick={() => handleCopy((order?.totalPrice || "649").replace(/[^\d]/g, ''), 'amount')}
                     className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-200 hover:bg-slate-300 text-slate-800 transition-colors"
                   >
                     {copiedField === 'amount' ? (
@@ -779,7 +919,7 @@ export default function PaymentGatewayPage({ order, onCancel }) {
 
                 <a
                   href={`https://wa.me/639552506023?text=${encodeURIComponent(
-                    `Hello Ecosafeguard, Order Ref: ${activeRefId || order?.refId}. Method: ${method}, Sender: ${senderNumber}, TrxID: ${trxId}, Status: ${verificationStatus}, Amount: ${order?.totalPrice}`
+                    `Hello Software Solutions BD, Order Ref: ${activeRefId || order?.refId}. Method: ${method}, Sender: ${senderNumber}, TrxID: ${trxId}, Status: ${verificationStatus}, Amount: ${order?.totalPrice}`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"

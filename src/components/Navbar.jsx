@@ -51,7 +51,7 @@ export default function Navbar() {
             onClick={(e) => handleNavClick(e, '#hero')}
             className="focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded-lg"
           >
-            <Logo isDark={false} />
+            <Logo isDark={false} className="h-10 sm:h-11 lg:h-12 w-auto" />
           </a>
 
           {/* Desktop Navigation */}

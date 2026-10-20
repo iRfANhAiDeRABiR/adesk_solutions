@@ -265,11 +265,11 @@ export default function PreOrderDoubts() {
               <p className="text-slate-600">
                 {lang === 'bn' ? (
                   <span>
-                    আমরা অফিশিয়াল ইনভাইটেশনের মাধ্যমে সরাসরি <strong className="font-bold text-slate-900">আপনার নিজস্ব পার্সোনাল ইমেইলে</strong> সাবস্ক্রিপশন চালু করে দেই। অফিশিয়াল ২ লাখ টাকার সাবস্ক্রিপশন আমাদের অফার মূল্যে মাত্র <strong className="font-bold text-slate-900">৳699</strong> (১ বছর / ২ বছর ৳1,249 / ৩ বছর ৳1,849) এ পাচ্ছেন, সাথে পাচ্ছেন <strong className="font-bold text-slate-900">পূর্ণ মেয়াদের রিপ্লেসমেন্ট ওয়ারেন্টি</strong> ও ২৪/৭ টেকনিক্যাল সাপোর্ট। সার্ভিস বন্ধ হওয়া বা সেলার হারিয়ে যাওয়ার কোনো সুযোগ নেই।
+                    আমরা অফিশিয়াল ইনভাইটেশনের মাধ্যমে সরাসরি <strong className="font-bold text-slate-900">আপনার নিজস্ব পার্সোনাল ইমেইলে</strong> সাবস্ক্রিপশন চালু করে দেই। অফিশিয়াল ২ লাখ টাকার সাবস্ক্রিপশন আমাদের অফার মূল্যে মাত্র <strong className="font-bold text-slate-900">৳649</strong> (১ বছর / ২ বছর ৳1,149 / ৩ বছর ৳1,749) এ পাচ্ছেন, সাথে পাচ্ছেন <strong className="font-bold text-slate-900">পূর্ণ মেয়াদের রিপ্লেসমেন্ট ওয়ারেন্টি</strong> ও ২৪/৭ টেকনিক্যাল সাপোর্ট। সার্ভিস বন্ধ হওয়া বা সেলার হারিয়ে যাওয়ার কোনো সুযোগ নেই।
                   </span>
                 ) : (
                   <span>
-                    We activate the subscription directly on <strong className="font-bold text-slate-900">your own personal email</strong> via official invitation. You get the 200,000 BDT official subscription at our offer price starting from <strong className="font-bold text-slate-900">699 BDT</strong> (1 Year / 2 Years 1,249 BDT / 3 Years 1,849 BDT), backed by a <strong className="font-bold text-slate-900">full replacement warranty</strong> and 24/7 technical assistance. Zero risk of cancellation or disappearing sellers.
+                    We activate the subscription directly on <strong className="font-bold text-slate-900">your own personal email</strong> via official invitation. You get the 200,000 BDT official subscription at our offer price starting from <strong className="font-bold text-slate-900">649 BDT</strong> (1 Year / 2 Years 1,149 BDT / 3 Years 1,749 BDT), backed by a <strong className="font-bold text-slate-900">full replacement warranty</strong> and 24/7 technical assistance. Zero risk of cancellation or disappearing sellers.
                   </span>
                 )}
               </p>

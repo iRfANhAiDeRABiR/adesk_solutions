@@ -7,8 +7,8 @@ export const autodeskFaqData = [
     categoryBn: "প্রোডাক্টস",
     question: "What Autodesk products are available?",
     questionBn: "কী কী অটোডেস্ক সফটওয়্যার সাবস্ক্রিপশন পাওয়া যাবে?",
-    answer: "Ecosafeguard Technology provides subscriptions for the entire primary Autodesk portfolio, including AutoCAD, Revit, 3ds Max, Maya, Fusion 360, Civil 3D, Inventor, Navisworks, InfraWorks, Plant 3D, and the industry collections (Architecture, Engineering & Construction Collection; Product Design & Manufacturing Collection; and Media & Entertainment Collection).",
-    answerBn: "ইকোসেফগার্ড টেকনোলজির মাধ্যমে প্রধান সকল অটোডেস্ক সফটওয়্যার সাবস্ক্রিপশন পাওয়া যায়, যার মধ্যে রয়েছে অটোক্যাড, রেভিট, থ্রিডিএস ম্যাক্স, মায়া, ফিউশন ৩৬০, সিভিল থ্রিডি, ইনভেন্টর, নেভিসওয়ার্কস, প্ল্যান্ট থ্রিডি এবং অটোডেস্ক ইন্ডাস্ট্রি কালেকশনসমূহ।"
+    answer: "Software Solutions BD provides subscriptions for the entire primary Autodesk portfolio, including AutoCAD, Revit, 3ds Max, Maya, Fusion 360, Civil 3D, Inventor, Navisworks, InfraWorks, Plant 3D, and the industry collections (Architecture, Engineering & Construction Collection; Product Design & Manufacturing Collection; and Media & Entertainment Collection).",
+    answerBn: "সফটওয়্যার সলিউশন বিডির মাধ্যমে প্রধান সকল অটোডেস্ক সফটওয়্যার সাবস্ক্রিপশন পাওয়া যায়, যার মধ্যে রয়েছে অটোক্যাড, রেভিট, থ্রিডিএস ম্যাক্স, মায়া, ফিউশন ৩৬০, সিভিল থ্রিডি, ইনভেন্টর, নেভিসওয়ার্কস, প্ল্যান্ট থ্রিডি এবং অটোডেস্ক ইন্ডাস্ট্রি কালেকশনসমূহ।"
   },
   {
     id: "faq-2",

@@ -1,4 +1,4 @@
-// Centralized Autodesk Software Data for Ecosafeguard Technology
+// Centralized Autodesk Software Data for Software Solutions BD
 
 export const autodeskProducts = [
   {
@@ -15,7 +15,7 @@ export const autodeskProducts = [
     icon: "PenTool",
     color: "from-red-600 to-amber-600",
     durations: ["1 Year", "2 Years", "3 Years"],
-    priceDisplay: "৳ 699",
+    priceDisplay: "৳ 649",
     defaultDuration: "1 Year",
     features: [
       "Precise 2D drafting and annotation tools",
@@ -46,7 +46,7 @@ export const autodeskProducts = [
     icon: "Building2",
     color: "from-blue-600 to-cyan-600",
     durations: ["1 Year", "2 Years", "3 Years"],
-    priceDisplay: "৳ 699",
+    priceDisplay: "৳ 649",
     defaultDuration: "1 Year",
     features: [
       "Parametric 3D building components and families",
@@ -77,7 +77,7 @@ export const autodeskProducts = [
     icon: "Box",
     color: "from-cyan-600 to-teal-500",
     durations: ["1 Year", "2 Years", "3 Years"],
-    priceDisplay: "৳ 699",
+    priceDisplay: "৳ 649",
     defaultDuration: "1 Year",
     features: [
       "Integrated Arnold photorealistic render engine",
@@ -108,7 +108,7 @@ export const autodeskProducts = [
     icon: "Video",
     color: "from-teal-600 to-emerald-600",
     durations: ["1 Year", "2 Years", "3 Years"],
-    priceDisplay: "৳ 699",
+    priceDisplay: "৳ 649",
     defaultDuration: "1 Year",
     features: [
       "Bifrost procedural visual effects system",
@@ -139,7 +139,7 @@ export const autodeskProducts = [
     icon: "Cpu",
     color: "from-amber-600 to-orange-500",
     durations: ["1 Year", "2 Years", "3 Years"],
-    priceDisplay: "৳ 699",
+    priceDisplay: "৳ 649",
     defaultDuration: "1 Year",
     features: [
       "Complete CAD, CAM (2.5 to 5-axis), and CAE simulation",
@@ -170,7 +170,7 @@ export const autodeskProducts = [
     icon: "MapPin",
     color: "from-indigo-600 to-blue-500",
     durations: ["1 Year", "2 Years", "3 Years"],
-    priceDisplay: "৳ 699",
+    priceDisplay: "৳ 649",
     defaultDuration: "1 Year",
     features: [
       "Dynamic road corridor and grading modeling",
@@ -201,7 +201,7 @@ export const autodeskProducts = [
     icon: "Wrench",
     color: "from-orange-600 to-amber-700",
     durations: ["1 Year", "2 Years", "3 Years"],
-    priceDisplay: "৳ 699",
+    priceDisplay: "৳ 649",
     defaultDuration: "1 Year",
     features: [
       "Parametric, direct, and freeform 3D modeling",
@@ -232,7 +232,7 @@ export const autodeskProducts = [
     icon: "Layers",
     color: "from-blue-700 to-indigo-800",
     durations: ["1 Year", "2 Years", "3 Years"],
-    priceDisplay: "৳ 699",
+    priceDisplay: "৳ 649",
     defaultDuration: "1 Year",
     features: [
       "Comprehensive multi-source clash detection",
@@ -311,7 +311,7 @@ export const autodeskCategories = [
   }
 ];
 
-// Subscription Duration Options: 1 Year (699 BDT), 2 Years (1249 BDT), and 3 Years (1849 BDT)
+// Subscription Duration Options: 1 Year (649 BDT), 2 Years (1149 BDT), and 3 Years (1749 BDT)
 export const subscriptionOptions = [
   {
     id: "1y",
@@ -321,8 +321,8 @@ export const subscriptionOptions = [
     badgeBn: "১ বছর মেয়াদী প্ল্যান",
     description: "Annual subscription providing uninterrupted workflow for studios, engineering firms, and active pros.",
     descriptionBn: "পেশাদার আর্কিটেক্ট, ইঞ্জিনিয়ার ও এজেন্সির জন্য একটানা কাজের বাৎসরিক সাবস্ক্রিপশন।",
-    price: 699,
-    priceDisplay: "৳ 699",
+    price: 649,
+    priceDisplay: "৳ 649",
     features: [
       "Uninterrupted 1-Year official access",
       "All 47+ Autodesk apps included",
@@ -344,8 +344,8 @@ export const subscriptionOptions = [
     badgeBn: "সর্বাধিক জনপ্রিয়",
     description: "Two-year subscription offering long-term stability and continuous commercial productivity.",
     descriptionBn: "২ বছরের নিশ্চিন্ত সাবস্ক্রিপশন—খরচ বাঁচিয়ে একটানা প্রজেক্টে কার্যকর সমাধান।",
-    price: 1249,
-    priceDisplay: "৳ 1,249",
+    price: 1149,
+    priceDisplay: "৳ 1,149",
     features: [
       "Full 2-Year uninterrupted validity",
       "All 47+ Autodesk apps & cloud updates",
@@ -367,8 +367,8 @@ export const subscriptionOptions = [
     badgeBn: "সর্বোচ্চ সাশ্রয়ী",
     description: "Long-term 3-year subscription protecting projects from price changes and ensuring continuous commercial productivity.",
     descriptionBn: "দীর্ঘমেয়াদী ৩ বছরের নিশ্চিন্ত সাবস্ক্রিপশন—যেকোনো মূল্যবৃদ্ধি থেকে সুরক্ষিত ও একটানা প্রজেক্টে কার্যকর।",
-    price: 1849,
-    priceDisplay: "৳ 1,849",
+    price: 1749,
+    priceDisplay: "৳ 1,749",
     features: [
       "Full 3-Year multi-year uninterrupted validity",
       "All 47+ Autodesk apps with cloud sync",
@@ -573,7 +573,7 @@ export const whyChooseItems = [
   }
 ];
 
-// The 6 Primary Autodesk Categories for Ecosafeguard Technology
+// The 6 Primary Autodesk Categories for Software Solutions BD
 export const autodeskSixCategories = [
   {
     id: "aec-cad",
@@ -582,7 +582,7 @@ export const autodeskSixCategories = [
     shortName: "Architecture & BIM Suite",
     tagline: "Revit, Civil 3D, AutoCAD, Navisworks Manage, Advance Steel & Forma",
     taglineBn: "রেভিট, সিভিল ৩ডি, অটোক্যাড, নেভিসওয়ার্কস ও অ্যাডভান্স স্টিল কালেকশন",
-    priceDisplay: "৳ 699",
+    priceDisplay: "৳ 649",
     defaultDuration: "1 Year",
     matchKeywords: ["aec", "architecture", "building", "civil", "revit", "forma", "c3d", "navisworks", "steel", "infra"]
   },
@@ -593,7 +593,7 @@ export const autodeskSixCategories = [
     shortName: "AutoCAD 7 Toolsets",
     tagline: "Architecture, Electrical, Mechanical, Map 3D, MEP, Plant 3D & Raster",
     taglineBn: "আর্কিটেকচার, ইলেকট্রিক্যাল, মেকানিক্যাল, এমইপি ও প্ল্যান্ট ৩ডি সহ ৭টি টুলসেট",
-    priceDisplay: "৳ 699",
+    priceDisplay: "৳ 649",
     defaultDuration: "1 Year",
     matchKeywords: ["autocad", "toolset", "cad", "specialized", "drafting"]
   },
@@ -604,7 +604,7 @@ export const autodeskSixCategories = [
     shortName: "Manufacturing & CAM Suite",
     tagline: "Inventor Pro, Fusion 360, CAM, Nastran, Tolerance & FeatureCAM",
     taglineBn: "ইনভেন্টর, ফিউশন ৩৬০, সিএএম, ন্যাস্ট্রান ও ম্যানুফ্যাকচারিং টুলস",
-    priceDisplay: "৳ 699",
+    priceDisplay: "৳ 649",
     defaultDuration: "1 Year",
     matchKeywords: ["mechanical", "manufacturing", "inventor", "fusion", "cam", "nastran", "pdm", "factory", "machining"]
   },
@@ -615,7 +615,7 @@ export const autodeskSixCategories = [
     shortName: "Fabrication & Vault Suite",
     tagline: "Fabrication CADmep, CAMduct, ESTmep, Vault Pro & Desktop Connector",
     taglineBn: "ফ্যাব্রিকেশন ক্যাডমেপ, ক্যামডাক্ট, এস্টমেপ ও ভল্ট প্রফেশনাল সার্ভার",
-    priceDisplay: "৳ 699",
+    priceDisplay: "৳ 649",
     defaultDuration: "1 Year",
     matchKeywords: ["fabrication", "vault", "camduct", "cadmep", "estmep", "connector"]
   },
@@ -626,7 +626,7 @@ export const autodeskSixCategories = [
     shortName: "Media & 3D VFX Suite",
     tagline: "3ds Max, Maya, Arnold Render, Flame, Mudbox, VRED & MotionBuilder",
     taglineBn: "থ্রিডিএস ম্যাক্স, মায়া, আর্নল্ড রেন্ডার, ফ্লেম ও মাডবক্স ভিজ্যুয়ালাইজেশন",
-    priceDisplay: "৳ 699",
+    priceDisplay: "৳ 649",
     defaultDuration: "1 Year",
     matchKeywords: ["3ds max", "maya", "animation", "vfx", "sculpting", "visualization", "arnold", "flame", "media", "mudbox"]
   },
@@ -637,7 +637,7 @@ export const autodeskSixCategories = [
     shortName: "Autodesk All Apps",
     tagline: "Master subscription unlocking all 47+ Autodesk applications & cloud tools",
     taglineBn: "৪৭টি অটোডেস্ক অ্যাপ্লিকেশনের সম্পূর্ণ মাস্টার সাবস্ক্রিপশন ও ক্লাউড স্টোরেজ",
-    priceDisplay: "৳ 699",
+    priceDisplay: "৳ 649",
     defaultDuration: "1 Year",
     matchKeywords: ["all apps", "complete", "suite", "all-apps", "all", "৪৭টি"]
   }
@@ -650,12 +650,12 @@ export const autodeskAllAppsPlans = [
     duration: "1 Year",
     durationBn: "১ বছর",
     years: 1,
-    name: "1 Year - Autodesk All Apps (All 47+ Professional Apps) - 699 BDT",
-    nameBn: "১ বছর - Autodesk All Apps (All 47+ Professional Apps) - 699 BDT",
+    name: "1 Year - Autodesk All Apps (All 47+ Professional Apps) - 649 BDT",
+    nameBn: "১ বছর - Autodesk All Apps (All 47+ Professional Apps) - 649 BDT",
     shortName: "Autodesk All Apps (1 Year)",
     shortNameBn: "অটোডেস্ক অল অ্যাপস (১ বছর)",
-    price: 699,
-    priceDisplay: "৳ 699",
+    price: 649,
+    priceDisplay: "৳ 649",
     badge: "1 Year Plan",
     badgeBn: "১ বছর মেয়াদী প্ল্যান",
     tagline: "Master subscription unlocking all 47+ Autodesk applications & cloud tools for 1 Year",
@@ -666,12 +666,12 @@ export const autodeskAllAppsPlans = [
     duration: "2 Years",
     durationBn: "২ বছর",
     years: 2,
-    name: "2 Years - Autodesk All Apps (All 47+ Professional Apps) - 1249 BDT",
-    nameBn: "২ বছর - Autodesk All Apps (All 47+ Professional Apps) - 1249 BDT",
+    name: "2 Years - Autodesk All Apps (All 47+ Professional Apps) - 1149 BDT",
+    nameBn: "২ বছর - Autodesk All Apps (All 47+ Professional Apps) - 1149 BDT",
     shortName: "Autodesk All Apps (2 Years)",
     shortNameBn: "অটোডেস্ক অল অ্যাপস (২ বছর)",
-    price: 1249,
-    priceDisplay: "৳ 1,249",
+    price: 1149,
+    priceDisplay: "৳ 1,149",
     badge: "2 Years Plan",
     badgeBn: "২ বছর মেয়াদী প্ল্যান",
     tagline: "Master subscription unlocking all 47+ Autodesk applications & cloud tools for 2 Years",
@@ -682,12 +682,12 @@ export const autodeskAllAppsPlans = [
     duration: "3 Years",
     durationBn: "৩ বছর",
     years: 3,
-    name: "3 Years - Autodesk All Apps (All 47+ Professional Apps) - 1849 BDT",
-    nameBn: "৩ বছর - Autodesk All Apps (All 47+ Professional Apps) - 1849 BDT",
+    name: "3 Years - Autodesk All Apps (All 47+ Professional Apps) - 1749 BDT",
+    nameBn: "৩ বছর - Autodesk All Apps (All 47+ Professional Apps) - 1749 BDT",
     shortName: "Autodesk All Apps (3 Years)",
     shortNameBn: "অটোডেস্ক অল অ্যাপস (৩ বছর)",
-    price: 1849,
-    priceDisplay: "৳ 1,849",
+    price: 1749,
+    priceDisplay: "৳ 1,749",
     badge: "3 Years Plan",
     badgeBn: "৩ বছর মেয়াদী প্ল্যান",
     tagline: "Master subscription unlocking all 47+ Autodesk applications & cloud tools for 3 Years",

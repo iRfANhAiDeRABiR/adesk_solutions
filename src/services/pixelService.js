@@ -1,13 +1,14 @@
-// Meta (Facebook) Pixel Service for Ecosafeguard Ads Tracking
+// Meta (Facebook) Pixel Service for Software Solutions BD Ads Tracking
 // Add your Pixel ID to .env: VITE_FB_PIXEL_ID=your_pixel_id
 
-export const FB_PIXEL_ID = import.meta.env.VITE_FB_PIXEL_ID || "1584380026240831";
+export const FB_PIXEL_ID = import.meta.env.VITE_FB_PIXEL_ID || "";
 
 /**
  * Initializes the official Meta Pixel base tracking script
  */
 export const initFacebookPixel = () => {
   if (typeof window === 'undefined') return;
+  if (!FB_PIXEL_ID) return;
 
   // Prevent multiple initializations if already loaded in index.html
   if (window.fbq) return;
@@ -81,7 +82,7 @@ export const trackViewContent = (productName, price) => {
   trackPixelEvent('ViewContent', {
     content_name: productName || 'Autodesk All Apps',
     content_category: 'Software Subscription',
-    value: price || 699,
+    value: price || 649,
     currency: 'BDT'
   });
 };
@@ -92,7 +93,7 @@ export const trackViewContent = (productName, price) => {
 export const trackInitiateCheckout = (orderPayload) => {
   const numericPrice = typeof orderPayload?.rawPrice === 'string'
     ? parseFloat(orderPayload.rawPrice.replace(/[^0-9.]/g, ''))
-    : (orderPayload?.price || 699);
+    : (orderPayload?.price || 649);
 
   trackPixelEvent('InitiateCheckout', {
     content_name: orderPayload?.product || 'Autodesk All Apps',
@@ -119,8 +120,8 @@ export const trackAddPaymentInfo = (gatewayName) => {
  * Track successful purchase submission
  */
 export const trackPurchase = (orderPayload) => {
-  const priceStr = String(orderPayload?.totalPrice || orderPayload?.rawPrice || orderPayload?.price || '699');
-  const numericPrice = parseFloat(priceStr.replace(/[^0-9.]/g, '')) || 699;
+  const priceStr = String(orderPayload?.totalPrice || orderPayload?.rawPrice || orderPayload?.price || '649');
+  const numericPrice = parseFloat(priceStr.replace(/[^0-9.]/g, '')) || 649;
 
   trackPixelEvent('Purchase', {
     content_name: orderPayload?.product || 'Autodesk All Apps',

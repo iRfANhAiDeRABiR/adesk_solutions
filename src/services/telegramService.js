@@ -1,28 +1,28 @@
-// Telegram Bot Service for Ecosafeguard Technology
-// Bot: t.me/ecosafeguard_bot
+// Telegram Bot Service for Software Solutions BD
+// Bot: @Notification_SolutionsBD_bot
 export const TELEGRAM_BOT_TOKEN = import.meta.env.VITE_TELEGRAM_BOT_TOKEN || "";
 
-// Retrieve saved Chat ID from environment, localStorage, or auto-detection
+// Retrieve saved Chat ID from environment, localStorage, or fallback
 export const getAdminChatId = () => {
-  return import.meta.env.VITE_TELEGRAM_CHAT_ID || localStorage.getItem('ecosafeguard_telegram_chat_id') || "";
+  return import.meta.env.VITE_TELEGRAM_CHAT_ID || localStorage.getItem('softwaresolutions_telegram_chat_id') || "";
 };
 
 export const setAdminChatId = (chatId) => {
   if (chatId) {
-    localStorage.setItem('ecosafeguard_telegram_chat_id', chatId.toString().trim());
+    localStorage.setItem('softwaresolutions_telegram_chat_id', chatId.toString().trim());
   }
 };
 
 /**
  * Auto-detects the admin Chat ID by querying getUpdates from the bot.
- * When the admin opens t.me/ecosafeguard_bot and taps /start, their Chat ID appears here.
+ * When the admin opens t.me/Notification_SolutionsBD_bot and taps /start, their Chat ID appears here.
  */
 export const autoDetectAdminChatId = async () => {
+  if (!TELEGRAM_BOT_TOKEN) return null;
   try {
     const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`);
     const data = await res.json();
     if (data.ok && data.result && data.result.length > 0) {
-      // Find the latest message or interaction
       for (let i = data.result.length - 1; i >= 0; i--) {
         const item = data.result[i];
         const chat = item.message?.chat || item.channel_post?.chat || item.my_chat_member?.chat;
@@ -57,9 +57,20 @@ export const escapeHtml = (text) => {
 
 /**
  * Sends full order details to the Telegram Bot with formatted HTML
+ * Supports optional reminder mode for recurring unacknowledged alerts
  */
-export const sendOrderToTelegram = async (orderPayload) => {
+export const sendOrderToTelegram = async (orderPayload, options = {}) => {
+  const { isReminder = false, reminderIndex = 1, maxReminders = 8 } = options;
   let targetChatId = getAdminChatId();
+
+  if (!TELEGRAM_BOT_TOKEN) {
+    console.warn("Telegram Bot token is not configured.");
+    return {
+      success: false,
+      reason: "NO_BOT_TOKEN",
+      message: "Please configure VITE_TELEGRAM_BOT_TOKEN."
+    };
+  }
 
   // If not yet saved in localStorage, try auto-detecting from recent bot updates
   if (!targetChatId) {
@@ -70,11 +81,11 @@ export const sendOrderToTelegram = async (orderPayload) => {
   }
 
   if (!targetChatId) {
-    console.warn("Telegram Notification Notice: No chat_id connected yet. Tap Start in t.me/ecosafeguard_bot.");
+    console.warn("Telegram Notification Notice: No chat_id connected yet. Tap Start in @Notification_SolutionsBD_bot.");
     return {
       success: false,
       reason: "NO_CHAT_ID",
-      message: "Please open t.me/ecosafeguard_bot and send /start to receive order alerts."
+      message: "Please open t.me/Notification_SolutionsBD_bot and send /start to receive order alerts."
     };
   }
 
@@ -86,7 +97,7 @@ export const sendOrderToTelegram = async (orderPayload) => {
   const safeProduct = escapeHtml(orderPayload.product || 'Autodesk All Apps');
   const safeDuration = escapeHtml(orderPayload.duration || '1 Year');
   const safeQuantity = escapeHtml(orderPayload.quantity || 1);
-  const safeTotalPrice = escapeHtml(orderPayload.totalPrice || '৳ 699');
+  const safeTotalPrice = escapeHtml(orderPayload.totalPrice || '৳ 649');
   const safeCoupon = orderPayload.couponApplied ? escapeHtml(orderPayload.couponApplied) : null;
   const safeDiscount = orderPayload.discountAmount ? escapeHtml(orderPayload.discountAmount) : null;
   const safeGateway = escapeHtml(orderPayload.paymentMethod || 'bKash');
@@ -96,8 +107,16 @@ export const sendOrderToTelegram = async (orderPayload) => {
 
   const couponLine = safeCoupon ? `\n🏷️ <b>Coupon:</b> <code>${safeCoupon}</code> (-10%, saved ${safeDiscount})` : '';
 
+  const headerTitle = isReminder 
+    ? `⚠️ <b>URGENT REMINDER (#${reminderIndex}/${maxReminders})</b>\n🔔 <b>ORDER AWAITING CONFIRMATION</b>`
+    : `🔔 <b>NEW SOFTWARE SOLUTIONS BD ORDER</b>`;
+
+  const statusLine = isReminder
+    ? `Status: ⏳ <b>PENDING VERIFICATION (ACTION REQUIRED #${reminderIndex})</b>`
+    : `Status: ⏳ <b>PENDING MANUAL VERIFICATION</b>`;
+
   const messageText = `
-🔔 <b>NEW AUTODESK ORDER SUBMISSION</b>
+${headerTitle}
 ━━━━━━━━━━━━━━━━━━━━━
 📋 <b>Order Ref:</b> <code>${safeRefId}</code>
 👤 <b>Customer:</b> <b>${safeName}</b>
@@ -115,7 +134,7 @@ export const sendOrderToTelegram = async (orderPayload) => {
 🔑 <b>Transaction ID (TrxID):</b> <code>${safeTrxId}</code>
 ⏰ <b>Time:</b> ${new Date().toLocaleString('en-GB', { timeZone: 'Asia/Dhaka' })}
 ━━━━━━━━━━━━━━━━━━━━━
-Status: ⏳ <b>PENDING VERIFICATION</b>
+${statusLine}
 `.trim();
 
   try {
@@ -140,8 +159,18 @@ Status: ⏳ <b>PENDING VERIFICATION</b>
     });
 
     const result = await response.json();
+    if (!result.ok) {
+      console.warn("Telegram sendMessage error:", result);
+      return { 
+        success: false, 
+        reason: result.description?.includes('chat not found') ? 'CHAT_NOT_FOUND' : 'API_ERROR',
+        description: result.description,
+        data: result 
+      };
+    }
+
     return { 
-      success: result.ok, 
+      success: true, 
       data: result,
       messageId: result.result?.message_id || null
     };
@@ -224,14 +253,17 @@ export const checkOrderStatusFromTelegram = async (orderRefId) => {
     const data = await res.json();
 
     if (data.ok && Array.isArray(data.result)) {
+      const cleanTargetRef = String(orderRefId).trim().toUpperCase();
+
       // Traverse backwards from newest update to find the latest action on this order
       for (let i = data.result.length - 1; i >= 0; i--) {
         const update = data.result[i];
         const cb = update.callback_query;
         if (!cb || !cb.data) continue;
 
-        const isConfirm = cb.data === `confirm_${orderRefId}` || cb.data === `confirmed_done_${orderRefId}`;
-        const isInvalid = cb.data === `invalid_${orderRefId}` || cb.data === `invalid_done_${orderRefId}`;
+        const dataStr = String(cb.data).trim().toUpperCase();
+        const isConfirm = dataStr === `CONFIRM_${cleanTargetRef}` || dataStr === `CONFIRMED_DONE_${cleanTargetRef}`;
+        const isInvalid = dataStr === `INVALID_${cleanTargetRef}` || dataStr === `INVALID_DONE_${cleanTargetRef}`;
 
         if (isConfirm || isInvalid) {
           const finalStatus = isConfirm ? 'CONFIRMED' : 'INVALID';
@@ -271,4 +303,3 @@ export const checkOrderStatusFromTelegram = async (orderRefId) => {
 
   return { status: 'PENDING' };
 };
-

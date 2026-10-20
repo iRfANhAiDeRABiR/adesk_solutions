@@ -6,7 +6,7 @@ const LanguageContext = createContext();
 
 export function LanguageProvider({ children }) {
   const [lang, setLang] = useState(() => {
-    return localStorage.getItem('ecosafeguard_lang') || 'en';
+    return localStorage.getItem('softwaresolutions_lang') || 'en';
   });
 
   const defaultAllApps = autodeskAllAppsPlans[0];
@@ -16,7 +16,7 @@ export function LanguageProvider({ children }) {
   const toggleLanguage = () => {
     setLang((prev) => {
       const next = prev === 'en' ? 'bn' : 'en';
-      localStorage.setItem('ecosafeguard_lang', next);
+      localStorage.setItem('softwaresolutions_lang', next);
       return next;
     });
   };
@@ -53,7 +53,7 @@ export function LanguageProvider({ children }) {
 
   const [activePaymentOrder, setActivePaymentOrder] = useState(() => {
     try {
-      const saved = localStorage.getItem('ecosafeguard_active_order');
+      const saved = localStorage.getItem('softwaresolutions_active_order');
       return saved ? JSON.parse(saved) : null;
     } catch (e) {
       return null;
@@ -63,7 +63,7 @@ export function LanguageProvider({ children }) {
   const startPayment = (order) => {
     setActivePaymentOrder(order);
     try {
-      localStorage.setItem('ecosafeguard_active_order', JSON.stringify(order));
+      localStorage.setItem('softwaresolutions_active_order', JSON.stringify(order));
     } catch (e) {}
     window.location.hash = '#payment';
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -72,7 +72,7 @@ export function LanguageProvider({ children }) {
   const cancelPayment = () => {
     setActivePaymentOrder(null);
     try {
-      localStorage.removeItem('ecosafeguard_active_order');
+      localStorage.removeItem('softwaresolutions_active_order');
     } catch (e) {}
     window.location.hash = '#order';
   };

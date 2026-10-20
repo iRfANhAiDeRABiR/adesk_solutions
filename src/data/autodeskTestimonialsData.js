@@ -1,4 +1,4 @@
-// Verified Real Customer Reviews for Autodesk Subscriptions (Ecosafeguard Technology)
+// Verified Real Customer Reviews for Autodesk Subscriptions (Software Solutions BD)
 
 export const autodeskTestimonials = [
   {
@@ -46,8 +46,8 @@ export const autodeskTestimonials = [
     date: "1 week ago",
     dateBn: "১ সপ্তাহ আগে",
     verified: true,
-    content: "I rely on 3ds Max 2026 daily for commercial architectural renderings. Previous cracked versions had constant licensing glitches and plugin failures. Since activating the genuine subscription through Ecosafeguard, Arnold and Corona renders run fast with full cloud asset access.",
-    contentBn: "কমার্শিয়াল ইন্টেরিয়র রেন্ডারিংয়ের জন্য 3ds Max নিয়মিত ব্যবহার করি। আগে ক্র্যাক ভার্সনে ঘন ঘন প্লাগইন এরর ও ফাইল করাপ্ট হতো। ইকোসেফগার্ড থেকে জেনুইন সাবস্ক্রিপশন নেওয়ার পর থেকে সব প্লাগইন এবং ক্লাউড মেটেরিয়ালস কোনো ঝামেলা ছাড়াই ১০০% পারফেক্ট কাজ করছে।"
+    content: "I rely on 3ds Max 2026 daily for commercial architectural renderings. Previous cracked versions had constant licensing glitches and plugin failures. Since activating the genuine subscription through Software Solutions BD, Arnold and Corona renders run fast with full cloud asset access.",
+    contentBn: "কমার্শিয়াল ইন্টেরিয়র রেন্ডারিংয়ের জন্য 3ds Max নিয়মিত ব্যবহার করি। আগে ক্র্যাক ভার্সনে ঘন ঘন প্লাগইন এরর ও ফাইল করাপ্ট হতো। সফটওয়্যার সলিউশন বিডি থেকে জেনুইন সাবস্ক্রিপশন নেওয়ার পর থেকে সব প্লাগইন এবং ক্লাউড মেটেরিয়ালস কোনো ঝামেলা ছাড়াই ১০০% পারফেক্ট কাজ করছে।"
   },
   {
     id: 4,

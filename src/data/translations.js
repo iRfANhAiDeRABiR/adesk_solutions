@@ -1,11 +1,11 @@
-// Autodesk-focused translations for Ecosafeguard Technology (EN & BN) - Only 1 Year & 3 Years
+// Autodesk-focused translations for Software Solutions BD (EN & BN) - Only 1 Year & 3 Years
 
 export const translations = {
   en: {
-    brandName: "Ecosafeguard Technology",
+    brandName: "Software Solutions BD",
     brandTagline: "Autodesk Solutions for Design, Engineering & Creativity",
     altTagline: "Power Your Ideas With Autodesk",
-    companyDesc: "Ecosafeguard Technology provides Autodesk software subscription solutions for designers, architects, engineers, manufacturers, construction professionals and creative teams.",
+    companyDesc: "Software Solutions BD provides Autodesk software subscription solutions for designers, architects, engineers, manufacturers, construction professionals and creative teams.",
 
     // Announcement Bar
     announcement: "Autodesk Software Subscriptions | Fast Digital Delivery | Dedicated Support",
@@ -90,7 +90,7 @@ export const translations = {
       ],
       subscriptionTitle: "1 / 2 / 3 Years Subscription",
       priceLabel: "Starts at:",
-      priceValue: "৳ 699",
+      priceValue: "৳ 649",
       primaryCta: "Get AutoCAD →",
       specialistPrompt: "Need help choosing a plan?",
       specialistAction: "Talk to an Autodesk specialist"
@@ -124,14 +124,14 @@ export const translations = {
 
     // Why Choose Us
     whyChoose: {
-      heading: "Why Choose Ecosafeguard Technology?",
+      heading: "Why Choose Software Solutions BD?",
       subtitle: "Our specialized focus delivers reliable Autodesk subscription solutions with responsive guidance."
     },
 
     // Trust & Authenticity Section
     authenticity: {
       heading: "Choose the Right Autodesk Subscription",
-      notice: "Subscription terms, activation methods, availability and included features may vary by Autodesk product and plan. Contact Ecosafeguard Technology before ordering if you need help selecting the appropriate option.",
+      notice: "Subscription terms, activation methods, availability and included features may vary by Autodesk product and plan. Contact Software Solutions BD before ordering if you need help selecting the appropriate option.",
       bullet1: "Official subscription duration choices (1 Year, 2 Years, 3 Years)",
       bullet2: "Transparent, upfront pricing information",
       bullet3: "Pre-order technical consultation available via WhatsApp or phone"
@@ -217,7 +217,7 @@ export const translations = {
     // Final CTA
     finalCta: {
       heading: "Find the Right Autodesk Software for Your Work",
-      subtitle: "Explore Autodesk products or contact Ecosafeguard Technology for help choosing a subscription.",
+      subtitle: "Explore Autodesk products or contact Software Solutions BD for help choosing a subscription.",
       exploreBtn: "Explore Products →",
       contactBtn: "Contact Us"
     },
@@ -231,7 +231,7 @@ export const translations = {
       whatsappLabel: "WhatsApp Support",
       whatsappValue: "+63 955 250 6023",
       emailLabel: "Email Desk",
-      emailValue: "support@ecosafeguard.shop",
+      emailValue: "Support@solutionsbd.com",
       hoursLabel: "Business Hours",
       hoursValue: "Saturday – Thursday: 9:00 AM – 10:00 PM",
       whatsappBtn: "WhatsApp Us",
@@ -245,7 +245,7 @@ export const translations = {
       colProducts: "Autodesk Products",
       colCollections: "Collections",
       colSupport: "Support",
-      copyright: "© 2026 Ecosafeguard Technology. All rights reserved.",
+      copyright: "© 2026 Software Solutions BD. All rights reserved.",
       disclaimer: "Autodesk, the Autodesk logo, AutoCAD, Revit, 3ds Max, Maya, Fusion 360, Civil 3D, and Inventor are registered trademarks or trademarks of Autodesk, Inc. All other brand names, product names, or trademarks belong to their respective holders."
     },
 
@@ -256,10 +256,10 @@ export const translations = {
   },
 
   bn: {
-    brandName: "ইকোসেফগার্ড টেকনোলজি",
+    brandName: "সফটওয়্যার সলিউশন বিডি",
     brandTagline: "ডিজাইন, ইঞ্জিনিয়ারিং ও ক্রিয়েটিভিটিতে অটোডেস্ক সমাধান",
     altTagline: "আপনার সৃষ্টিশীলতাকে এগিয়ে নিন অটোডেস্কে",
-    companyDesc: "ইকোসেফগার্ড টেকনোলজি আর্কিটেক্ট, সিভিল ও মেকানিক্যাল ইঞ্জিনিয়ার, ডিজাইনার এবং নির্মাণ শিল্পীদের জন্য অটোডেস্ক সফটওয়্যার সাবস্ক্রিপশন সমাধান সরবরাহ করে।",
+    companyDesc: "সফটওয়্যার সলিউশন বিডি আর্কিটেক্ট, সিভিল ও মেকানিক্যাল ইঞ্জিনিয়ার, ডিজাইনার এবং নির্মাণ শিল্পীদের জন্য অটোডেস্ক সফটওয়্যার সাবস্ক্রিপশন সমাধান সরবরাহ করে।",
 
     // Announcement Bar
     announcement: "অটোডেস্ক সফটওয়্যার সাবস্ক্রিপশন | দ্রুত ডিজিটাল ডেলিভারি | বিশেষজ্ঞ টেকনিক্যাল সাপোর্ট",
@@ -344,7 +344,7 @@ export const translations = {
       ],
       subscriptionTitle: "১ / ২ / ৩ বছর মেয়াদী সাবস্ক্রিপশন",
       priceLabel: "শুরু মাত্র:",
-      priceValue: "৳ 699",
+      priceValue: "৳ 649",
       primaryCta: "অটোক্যাড অর্ডার করুন →",
       specialistPrompt: "সঠিক প্ল্যান বেছে নিতে দ্বিধায় আছেন?",
       specialistAction: "অটোডেস্ক বিশেষজ্ঞের সাথে কথা বলুন"
@@ -378,14 +378,14 @@ export const translations = {
 
     // Why Choose Us
     whyChoose: {
-      heading: "কেন ইকোসেফগার্ড টেকনোলজি বেছে নেবেন?",
+      heading: "কেন সফটওয়্যার সলিউশন বিডি বেছে নেবেন?",
       subtitle: "অটোডেস্ক সমাধানের ওপর আমাদের বিশেষায়িত দক্ষতা ও নির্ভরযোগ্য গ্রাহক সেবা।"
     },
 
     // Trust & Authenticity Section
     authenticity: {
       heading: "সঠিক অটোডেস্ক সাবস্ক্রিপশন নির্বাচন করুন",
-      notice: "অটোডেস্ক প্রোডাক্ট ও প্ল্যান অনুযায়ী সাবস্ক্রিপশনের মেয়াদ, অ্যাক্টিভেশন পদ্ধতি ও সুবিধাসমূহ ভিন্ন হতে পারে। অর্ডার করার পূর্বে প্রয়োজনে ইকোসেফগার্ডের সাথে পরামর্শ করে সঠিক অপশনটি বেছে নিন।",
+      notice: "অটোডেস্ক প্রোডাক্ট ও প্ল্যান অনুযায়ী সাবস্ক্রিপশনের মেয়াদ, অ্যাক্টিভেশন পদ্ধতি ও সুবিধাসমূহ ভিন্ন হতে পারে। অর্ডার করার পূর্বে প্রয়োজনে সফটওয়্যার সলিউশন বিডির সাথে পরামর্শ করে সঠিক অপশনটি বেছে নিন।",
       bullet1: "সুস্পষ্ট সাবস্ক্রিপশন মেয়াদ (১ বছর, ২ বছর ও ৩ বছর)",
       bullet2: "স্বচ্ছ ও সুস্পষ্ট মূল্য বিবরণ",
       bullet3: "অর্ডার করার পূর্বে ফোন বা হোয়াটসঅ্যাপে টেকনিক্যাল পরামর্শ"
@@ -486,7 +486,7 @@ export const translations = {
       whatsappLabel: "হোয়াটসঅ্যাপ ডেস্ক",
       whatsappValue: "+৬৩ ৯৫৫ ২৫০ ৬০২৩",
       emailLabel: "ইমেইল ডেস্ক",
-      emailValue: "support@ecosafeguard.shop",
+      emailValue: "Support@solutionsbd.com",
       hoursLabel: "অফিস সময়",
       hoursValue: "শনিবার – বৃহস্পতিবার: সকাল ৯:০০ – রাত ১০:০০",
       whatsappBtn: "হোয়াটসঅ্যাপে মেসেজ",
@@ -500,7 +500,7 @@ export const translations = {
       colProducts: "অটোডেস্ক প্রোডাক্টস",
       colCollections: "কালেকশনসমূহ",
       colSupport: "সাপোর্ট ও পলিসি",
-      copyright: "© ২০২৬ ইকোসেফগার্ড টেকনোলজি। সর্বস্বত্ব সংরক্ষিত।",
+      copyright: "© ২০২৬ সফটওয়্যার সলিউশন বিডি। সর্বস্বত্ব সংরক্ষিত।",
       disclaimer: "Autodesk, AutoCAD, Revit, 3ds Max, Maya, Fusion 360, Civil 3D, এবং Inventor হলো Autodesk, Inc.-এর নিবন্ধিত ট্রেডমার্ক। অন্যান্য সকল ব্র্যান্ড নাম বা ট্রেডমার্ক তাদের নিজ নিজ প্রতিষ্ঠানের সম্পত্তি।"
     },
 

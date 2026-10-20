@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { ShieldAlert, Home, ArrowRight, MessageCircle, Lock, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { trackPixelEvent } from '../services/pixelService';
+import Logo from './common/Logo';
 
 export default function NotFoundPage({ onGoHome }) {
   const { lang } = useLanguage();
@@ -44,19 +45,7 @@ export default function NotFoundPage({ onGoHome }) {
       {/* Top Simple Header */}
       <header className="relative z-10 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex items-center justify-between">
         <a href="/" onClick={handleHomeClick} className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-blue to-emerald-400 p-[1.5px] shadow-lg shadow-brand-blue/20">
-            <div className="w-full h-full bg-navy-950 rounded-[10px] flex items-center justify-center">
-              <ShieldAlert className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform duration-300" />
-            </div>
-          </div>
-          <div>
-            <span className="text-lg font-black tracking-tight text-white block">
-              ECOSAFEGUARD<span className="text-cyan-400">.</span>
-            </span>
-            <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold block -mt-1">
-              Technology Solutions
-            </span>
-          </div>
+          <Logo isDark={true} className="h-10" />
         </a>
 
         <div className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-800 text-emerald-400">
@@ -139,7 +128,7 @@ export default function NotFoundPage({ onGoHome }) {
 
       {/* Footer minimal info */}
       <footer className="relative z-10 py-6 text-center text-xs text-slate-500">
-        © 2024–2027 Ecosafeguard Technology. All Rights Reserved. Official Autodesk Solutions.
+        © 2024–2027 Software Solutions BD. All Rights Reserved. Official Autodesk Solutions.
       </footer>
     </div>
   );

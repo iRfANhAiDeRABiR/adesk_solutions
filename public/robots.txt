@@ -1,4 +1,4 @@
-# Ecosafeguard Technology Robots.txt
+# Software Solutions BD Robots.txt
 # Controls web crawlers and prevents indexing of sensitive probe paths
 
 User-agent: *
@@ -16,5 +16,5 @@ Allow: /
 Allow: /assets/
 
 # Host
-Host: https://autodesk.ecosafeguard.shop
+# Host: https://solutionsbd.com
 

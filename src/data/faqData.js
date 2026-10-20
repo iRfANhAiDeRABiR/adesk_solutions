@@ -3,8 +3,8 @@ export const faqData = [
     id: "faq-1",
     category: "Products",
     categoryBn: "পণ্যসমূহ",
-    question: "What products does Ecosafeguard Technology provide?",
-    questionBn: "ইকোসেফগার্ড টেকনোলজি কী কী প্রোডাক্ট সরবরাহ করে?",
+    question: "What products does Software Solutions BD provide?",
+    questionBn: "সফটওয়্যার সলিউশন বিডি কী কী প্রোডাক্ট সরবরাহ করে?",
     answer: "We specialize in 100% genuine software licenses and subscriptions. Our catalog includes Microsoft Windows and Office, Autodesk engineering suites (AutoCAD, Revit, 3ds Max), Adobe Creative Cloud, Cloud storage (Google Workspace, OneDrive), AI productivity tools (ChatGPT, Claude), cybersecurity software (antivirus, endpoint shields), and custom IT solutions for businesses and professionals.",
     answerBn: "আমরা ১০০% অরিজিনাল ও জেনুইন সফটওয়্যার লাইসেন্স এবং সাবস্ক্রিপশন সরবরাহ করি। যার মধ্যে রয়েছে মাইক্রোসফট উইন্ডোজ ও অফিস, অটোডেস্ক স্যুট (অটোক্যাড, রেভিট), অ্যাডোবি ক্রিয়েটিভ ক্লাউড, ক্লাউড স্টোরেজ, এআই টুলস এবং বিজনেস আইটি সিকিউরিটি সলিউশন।"
   },
@@ -59,8 +59,8 @@ export const faqData = [
     categoryBn: "জেনুইন নিশ্চয়তা",
     question: "Are software products genuine and legitimate?",
     questionBn: "আপনাদের সফটওয়্যারগুলো কি সম্পূর্ণ জেনুইন?",
-    answer: "Yes. Ecosafeguard Technology strictly deals in genuine licenses and official subscription memberships. You sign in and download installers directly from the respective vendor's official websites (e.g., autodesk.com, microsoft.com, adobe.com). We do NOT distribute cracks, keygens, patched EXEs, or malware-laden files.",
-    answerBn: "হ্যাঁ, ১০০% জেনুইন। ইকোসেফগার্ড টেকনোলজি কোনো ধরনের ক্র্যাক ফাইল, কি-জেন কিংবা ম্যালওয়্যার যুক্ত সফটওয়্যার প্রমোট করে না। আপনি সরাসরি প্রস্তুতকারক কোম্পানির অফিসিয়াল ওয়েবসাইট (autodesk.com, microsoft.com, adobe.com) থেকে ডাউনলোড ও অ্যাক্টিভেট করবেন।"
+    answer: "Yes. Software Solutions BD strictly deals in genuine licenses and official subscription memberships. You sign in and download installers directly from the respective vendor's official websites (e.g., autodesk.com, microsoft.com, adobe.com). We do NOT distribute cracks, keygens, patched EXEs, or malware-laden files.",
+    answerBn: "হ্যাঁ, ১০০% জেনুইন। সফটওয়্যার সলিউশন বিডি কোনো ধরনের ক্র্যাক ফাইল, কি-জেন কিংবা ম্যালওয়্যার যুক্ত সফটওয়্যার প্রমোট করে না। আপনি সরাসরি প্রস্তুতকারক কোম্পানির অফিসিয়াল ওয়েবসাইট (autodesk.com, microsoft.com, adobe.com) থেকে ডাউনলোড ও অ্যাক্টিভেট করবেন।"
   },
   {
     id: "faq-8",
@@ -77,7 +77,7 @@ export const faqData = [
     categoryBn: "ওয়ারেন্টি",
     question: "What happens if I face an activation issue?",
     questionBn: "লাইসেন্স অ্যাক্টিভেশনে কোনো সমস্যা হলে কী হবে?",
-    answer: "Every subscription and license is backed by our Ecosafeguard Full Replacement Guarantee throughout the validity period. If an activation problem or vendor glitch occurs that cannot be resolved within 24 hours, we issue a fresh replacement license promptly at zero additional cost.",
+    answer: "Every subscription and license is backed by our Software Solutions BD Full Replacement Guarantee throughout the validity period. If an activation problem or vendor glitch occurs that cannot be resolved within 24 hours, we issue a fresh replacement license promptly at zero additional cost.",
     answerBn: "আমাদের প্রতিটি প্রোডাক্টের সাথে রয়েছে পূর্ণ মেয়াদের ফুল রিপ্লেসমেন্ট গ্যারান্টি। কোনো টেকনিক্যাল বা অ্যাক্টিভেশন সমস্যা দেখা দিলে এবং ২৪ ঘণ্টার মধ্যে সমাধান না হলে আমরা সম্পূর্ণ বিনামূল্যে নতুন লাইসেন্স প্রদান করি।"
   },
   {
@@ -86,8 +86,8 @@ export const faqData = [
     categoryBn: "সাপোর্ট",
     question: "How can I contact customer support?",
     questionBn: "কাস্টমার সাপোর্টে কীভাবে যোগাযোগ করব?",
-    answer: "You can reach our dedicated support desk anytime via our floating WhatsApp button on this site, call our customer hotline at +63 955 250 6023, email us at support@ecosafeguard.shop, or send a message through the contact form on this page. We respond promptly!",
-    answerBn: "আমাদের সাথে যোগাযোগ করা খুব সহজ: স্ক্রিনের নিচে ডানদিকের WhatsApp বাটনে ক্লিক করুন, সরাসরি যোগাযোগ করুন আমাদের হেল্পলাইনে (+৬৩ ৯৫৫ ২৫০ ৬০২৩), অথবা support@ecosafeguard.shop এ ইমেইল করুন।"
+    answer: "You can reach our dedicated support desk anytime via our floating WhatsApp button on this site, call our customer hotline at +63 955 250 6023, email us at Support@solutionsbd.com, or send a message through the contact form on this page. We respond promptly!",
+    answerBn: "আমাদের সাথে যোগাযোগ করা খুব সহজ: স্ক্রিনের নিচে ডানদিকের WhatsApp বাটনে ক্লিক করুন, সরাসরি যোগাযোগ করুন আমাদের হেল্পলাইনে (+৬৩ ৯৫৫ ২৫০ ৬০২৩), অথবা Support@solutionsbd.com এ ইমেইল করুন।"
   }
 ];
 
