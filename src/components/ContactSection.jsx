@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import SectionHeading from './common/SectionHeading';
 import { useLanguage } from '../context/LanguageContext';
+import { trackContact } from '../services/pixelService';
 import {
   Phone,
   MessageCircle,
@@ -51,6 +52,7 @@ export default function ContactSection() {
                   href={`https://wa.me/${t.contact.whatsappValue.replace(/[^0-9]/g, '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => trackContact('ContactSection_WhatsApp')}
                   className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:underline"
                 >
                   <span>{t.contact.whatsappBtn} →</span>

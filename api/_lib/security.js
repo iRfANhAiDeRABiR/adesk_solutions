@@ -140,7 +140,11 @@ export function validateOrderInput(input) {
       senderNumber: rawSender,
       trxId: rawTrx,
       couponCode: input?.couponCode || null,
-      requirements
+      requirements,
+      fbp: typeof input?.fbp === 'string' && input.fbp.startsWith('fb.') ? input.fbp.trim() : null,
+      fbc: typeof input?.fbc === 'string' && input.fbc.startsWith('fb.') ? input.fbc.trim() : null,
+      eventSourceUrl: typeof input?.eventSourceUrl === 'string' ? input.eventSourceUrl.trim() : null,
+      consentGranted: input?.consentGranted !== false
     }
   };
 }

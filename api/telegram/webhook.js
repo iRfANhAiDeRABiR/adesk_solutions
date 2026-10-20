@@ -5,6 +5,7 @@
 
 import { OrderStateMachine } from '../_lib/store.js';
 import { updateTelegramMessageRemark } from '../_lib/security.js';
+import { dispatchCapiPurchaseForOrder } from '../_lib/metaCapi.js';
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || process.env.VITE_TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET || '';
@@ -74,6 +75,24 @@ export default async function handler(req, res) {
       userId: senderId,
       username: cb.from?.username || cb.from?.first_name || 'Admin'
     });
+
+    // 4b. Authoritative Meta Conversions API (CAPI) Purchase Event Dispatch
+    let capiResult = null;
+    if (action === 'CONFIRMED' && updateResult.isFirstConfirmation) {
+      const order = OrderStateMachine.getOrder(orderRef);
+      if (order && order.consentGranted !== false) {
+        try {
+          capiResult = await dispatchCapiPurchaseForOrder(order, OrderStateMachine);
+          if (capiResult.success) {
+            OrderStateMachine.markCapiDispatched(order.purchaseEventId, { fbtraceId: capiResult.fbtraceId });
+          } else if (!capiResult.skipped) {
+            OrderStateMachine.markCapiFailed(order.purchaseEventId, capiResult.error);
+          }
+        } catch (capiErr) {
+          OrderStateMachine.markCapiFailed(order.purchaseEventId, capiErr.message);
+        }
+      }
+    }
 
     // 5. Answer Callback Query
     if (TELEGRAM_BOT_TOKEN && cb.id) {
