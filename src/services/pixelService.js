@@ -116,17 +116,26 @@ export const trackAddPaymentInfo = (gatewayName) => {
   });
 };
 
+// Set to prevent duplicate Purchase events from firing multiple times
+const trackedPurchases = new Set();
+
 /**
- * Track successful purchase submission
+ * Track verified purchase confirmation (fires only upon administrator verification)
  */
 export const trackPurchase = (orderPayload) => {
+  const refId = orderPayload?.refId || 'AUTODESK-SUB';
+  if (trackedPurchases.has(refId)) {
+    return; // Deduplicate: Purchase event already dispatched for this order ref
+  }
+  trackedPurchases.add(refId);
+
   const priceStr = String(orderPayload?.totalPrice || orderPayload?.rawPrice || orderPayload?.price || '649');
   const numericPrice = parseFloat(priceStr.replace(/[^0-9.]/g, '')) || 649;
 
   trackPixelEvent('Purchase', {
     content_name: orderPayload?.product || 'Autodesk All Apps',
     content_type: 'product',
-    content_ids: [orderPayload?.refId || 'AUTODESK-SUB'],
+    content_ids: [refId],
     num_items: Number(orderPayload?.quantity) || 1,
     value: numericPrice,
     currency: 'BDT'

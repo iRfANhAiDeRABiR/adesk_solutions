@@ -94,6 +94,14 @@ export default function PaymentGatewayPage({ order, onCancel }) {
   const verificationStatusRef = useRef('PENDING');
   verificationStatusRef.current = verificationStatus;
   const reminderTimerRef = useRef(null);
+  const hasTrackedPurchaseRef = useRef(false);
+
+  const handleSafeCancel = () => {
+    try {
+      localStorage.removeItem('softwaresolutions_last_submission');
+    } catch (e) {}
+    if (onCancel) onCancel();
+  };
 
   const handleCopy = (text, fieldName) => {
     navigator.clipboard.writeText(text);
@@ -185,15 +193,25 @@ export default function PaymentGatewayPage({ order, onCancel }) {
     lastSubmittedPayloadRef.current = customerPayload;
     verificationStatusRef.current = 'PENDING';
 
-    trackPurchase(customerPayload);
+    // Track payment method submission (Meta Pixel AddPaymentInfo, NOT Purchase)
+    // Purchase event is strictly deferred until administrator verification is confirmed
+    trackAddPaymentInfo(method);
     setVerificationStatus('PENDING');
     setStep(3);
 
-    // Send order to Telegram Bot automatically
+    // Send order to backend API / Telegram Bot automatically
     setTelegramStatus('sending');
     const teleRes = await sendOrderToTelegram(customerPayload);
     if (teleRes.success) {
+      if (teleRes.refId && teleRes.refId !== targetRef) {
+        setActiveRefId(teleRes.refId);
+      }
       setTelegramStatus('sent');
+    } else if (teleRes.reason === 'DUPLICATE_TRX_ID') {
+      setTelegramStatus('failed');
+      setStep(2);
+      setError('এই ট্রানজেকশন আইডি (TrxID) ইতিপূর্বে ব্যবহার করা হয়েছে। অনুগ্রহ করে আপনার নতুন ও সঠিক TrxID লিখুন।');
+      return;
     } else if (teleRes.reason === 'NO_CHAT_ID') {
       setTelegramStatus('no_chat_id');
     } else {
@@ -219,6 +237,16 @@ export default function PaymentGatewayPage({ order, onCancel }) {
             setVerificationStatus(res.status);
             verificationStatusRef.current = res.status;
             setVerificationDetails(res);
+
+            // Verified Purchase Tracking: Meta Pixel Purchase event fires ONLY after administrator confirmation
+            if (res.status === 'CONFIRMED' && !hasTrackedPurchaseRef.current) {
+              hasTrackedPurchaseRef.current = true;
+              trackPurchase(lastSubmittedPayloadRef.current || order);
+              try {
+                localStorage.removeItem('softwaresolutions_last_submission');
+              } catch (e) {}
+            }
+
             if (reminderTimerRef.current) {
               clearInterval(reminderTimerRef.current);
               reminderTimerRef.current = null;
@@ -283,10 +311,18 @@ export default function PaymentGatewayPage({ order, onCancel }) {
       try {
         const liveCheck = await checkOrderStatusFromTelegram(ref);
         if (liveCheck && (liveCheck.status === 'CONFIRMED' || liveCheck.status === 'INVALID')) {
-          console.log(`✅ [Telegram Reminder Stopped] Live status detected: ${liveCheck.status}`);
           setVerificationStatus(liveCheck.status);
           verificationStatusRef.current = liveCheck.status;
           setVerificationDetails(liveCheck);
+
+          if (liveCheck.status === 'CONFIRMED' && !hasTrackedPurchaseRef.current) {
+            hasTrackedPurchaseRef.current = true;
+            trackPurchase(lastSubmittedPayloadRef.current || order);
+            try {
+              localStorage.removeItem('softwaresolutions_last_submission');
+            } catch (e) {}
+          }
+
           if (reminderTimerRef.current) {
             clearInterval(reminderTimerRef.current);
             reminderTimerRef.current = null;
@@ -560,7 +596,7 @@ export default function PaymentGatewayPage({ order, onCancel }) {
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={onCancel}
+                  onClick={handleSafeCancel}
                   className="py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider bg-white/20 hover:bg-white/30 text-white border border-white/30 transition-all text-center"
                 >
                   Close / বাতিল
@@ -932,7 +968,7 @@ export default function PaymentGatewayPage({ order, onCancel }) {
 
                 <button
                   type="button"
-                  onClick={onCancel}
+                  onClick={handleSafeCancel}
                   className="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-white/20 hover:bg-white/30 text-white border border-white/30 transition-all text-center"
                 >
                   Return to Homepage / মূল পেজে ফিরুন

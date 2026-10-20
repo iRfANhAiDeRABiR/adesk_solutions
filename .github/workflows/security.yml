@@ -1,0 +1,59 @@
+name: Security & Quality CI
+
+on:
+  push:
+    branches: [ main, security-audit-fix ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  security-tests:
+    name: Security Tests & Build Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Secret Scanning (Automated Pre-flight)
+        run: |
+          echo "Scanning codebase for accidentally committed Telegram tokens or credentials..."
+          node tests/security/secrets.test.js
+
+      - name: Run Automated Security Test Suite
+        run: npm test
+
+      - name: Verify Production Build
+        run: npm run build
+
+      - name: Verify Production Bundle Cleanliness
+        run: |
+          echo "Verifying no secrets were bundled into dist/..."
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+            const regex = /[0-9]{8,10}:[a-zA-Z0-9_-]{35}/;
+            const dist = path.resolve('dist');
+            if (fs.existsSync(dist)) {
+              const files = fs.readdirSync(path.join(dist, 'assets'));
+              for (const f of files) {
+                const content = fs.readFileSync(path.join(dist, 'assets', f), 'utf-8');
+                if (regex.test(content)) {
+                  console.error('CRITICAL: Secret pattern detected in dist/assets/' + f);
+                  process.exit(1);
+                }
+              }
+              console.log('Production assets verified clean.');
+            }
+          "

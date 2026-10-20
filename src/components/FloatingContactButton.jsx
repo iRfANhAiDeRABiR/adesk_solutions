@@ -42,7 +42,7 @@ export default function FloatingContactButton() {
           <a
             href={`https://wa.me/${whatsappNumber}`}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors shadow-md"
           >
             <Send className="w-3.5 h-3.5" />

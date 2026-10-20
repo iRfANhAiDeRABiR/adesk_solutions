@@ -1,50 +1,14 @@
-// Telegram Bot Service for Software Solutions BD
-// Bot: @Notification_SolutionsBD_bot
-export const TELEGRAM_BOT_TOKEN = import.meta.env.VITE_TELEGRAM_BOT_TOKEN || "";
-
-// Retrieve saved Chat ID from environment, localStorage, or fallback
-export const getAdminChatId = () => {
-  return import.meta.env.VITE_TELEGRAM_CHAT_ID || localStorage.getItem('softwaresolutions_telegram_chat_id') || "";
-};
-
-export const setAdminChatId = (chatId) => {
-  if (chatId) {
-    localStorage.setItem('softwaresolutions_telegram_chat_id', chatId.toString().trim());
-  }
-};
-
 /**
- * Auto-detects the admin Chat ID by querying getUpdates from the bot.
- * When the admin opens t.me/Notification_SolutionsBD_bot and taps /start, their Chat ID appears here.
+ * Telegram & Payment Verification Service for Software Solutions BD
+ * Secure Client-to-Backend Architecture
+ *
+ * NOTE: Telegram Bot Tokens and privileged API methods are strictly
+ * managed on the server-side via Serverless APIs (/api/order/submit & /api/order/verify).
+ * No privileged Bot Tokens are ever embedded in client JavaScript bundles.
  */
-export const autoDetectAdminChatId = async () => {
-  if (!TELEGRAM_BOT_TOKEN) return null;
-  try {
-    const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`);
-    const data = await res.json();
-    if (data.ok && data.result && data.result.length > 0) {
-      for (let i = data.result.length - 1; i >= 0; i--) {
-        const item = data.result[i];
-        const chat = item.message?.chat || item.channel_post?.chat || item.my_chat_member?.chat;
-        if (chat && chat.id) {
-          const discoveredId = chat.id.toString();
-          setAdminChatId(discoveredId);
-          return {
-            chatId: discoveredId,
-            firstName: chat.first_name || chat.title || "Admin",
-            username: chat.username || ""
-          };
-        }
-      }
-    }
-  } catch (err) {
-    console.error("Error auto-detecting Telegram Chat ID:", err);
-  }
-  return null;
-};
 
 /**
- * Sanitizes strings for Telegram HTML parse_mode to prevent parsing errors and HTML injection
+ * Sanitizes strings for HTML escaping
  */
 export const escapeHtml = (text) => {
   if (text === null || text === undefined) return '';
@@ -55,250 +19,130 @@ export const escapeHtml = (text) => {
     .replace(/"/g, '&quot;');
 };
 
+export const getAdminChatId = () => {
+  return localStorage.getItem('softwaresolutions_telegram_chat_id') || "";
+};
+
+export const setAdminChatId = (chatId) => {
+  if (chatId) {
+    localStorage.setItem('softwaresolutions_telegram_chat_id', chatId.toString().trim());
+  }
+};
+
+export const autoDetectAdminChatId = async () => {
+  // In secure mode, Chat ID detection is managed server-side
+  return {
+    chatId: getAdminChatId() || "ServerConfigured",
+    firstName: "Admin",
+    username: "Admin"
+  };
+};
+
 /**
- * Sends full order details to the Telegram Bot with formatted HTML
- * Supports optional reminder mode for recurring unacknowledged alerts
+ * Submits order to backend API (/api/order/submit)
+ * Backend recalculates authoritative pricing, validates TrxID, and notifies Telegram privately.
  */
 export const sendOrderToTelegram = async (orderPayload, options = {}) => {
-  const { isReminder = false, reminderIndex = 1, maxReminders = 8 } = options;
-  let targetChatId = getAdminChatId();
-
-  if (!TELEGRAM_BOT_TOKEN) {
-    console.warn("Telegram Bot token is not configured.");
-    return {
-      success: false,
-      reason: "NO_BOT_TOKEN",
-      message: "Please configure VITE_TELEGRAM_BOT_TOKEN."
-    };
-  }
-
-  // If not yet saved in localStorage, try auto-detecting from recent bot updates
-  if (!targetChatId) {
-    const detected = await autoDetectAdminChatId();
-    if (detected) {
-      targetChatId = detected.chatId;
-    }
-  }
-
-  if (!targetChatId) {
-    console.warn("Telegram Notification Notice: No chat_id connected yet. Tap Start in @Notification_SolutionsBD_bot.");
-    return {
-      success: false,
-      reason: "NO_CHAT_ID",
-      message: "Please open t.me/Notification_SolutionsBD_bot and send /start to receive order alerts."
-    };
-  }
-
-  // Sanitize all user inputs before inserting into Telegram HTML template
-  const safeRefId = escapeHtml(orderPayload.refId || 'N/A');
-  const safeName = escapeHtml(orderPayload.name || 'N/A');
-  const safeEmail = escapeHtml(orderPayload.email || 'N/A');
-  const safePhone = escapeHtml(orderPayload.phone || 'N/A');
-  const safeProduct = escapeHtml(orderPayload.product || 'Autodesk All Apps');
-  const safeDuration = escapeHtml(orderPayload.duration || '1 Year');
-  const safeQuantity = escapeHtml(orderPayload.quantity || 1);
-  const safeTotalPrice = escapeHtml(orderPayload.totalPrice || '৳ 649');
-  const safeCoupon = orderPayload.couponApplied ? escapeHtml(orderPayload.couponApplied) : null;
-  const safeDiscount = orderPayload.discountAmount ? escapeHtml(orderPayload.discountAmount) : null;
-  const safeGateway = escapeHtml(orderPayload.paymentMethod || 'bKash');
-  const safeSender = escapeHtml(orderPayload.senderNumber || 'N/A');
-  const safeReceiver = escapeHtml(orderPayload.receiverNumber || 'N/A');
-  const safeTrxId = escapeHtml(orderPayload.trxId || 'N/A');
-
-  const couponLine = safeCoupon ? `\n🏷️ <b>Coupon:</b> <code>${safeCoupon}</code> (-10%, saved ${safeDiscount})` : '';
-
-  const headerTitle = isReminder 
-    ? `⚠️ <b>URGENT REMINDER (#${reminderIndex}/${maxReminders})</b>\n🔔 <b>ORDER AWAITING CONFIRMATION</b>`
-    : `🔔 <b>NEW SOFTWARE SOLUTIONS BD ORDER</b>`;
-
-  const statusLine = isReminder
-    ? `Status: ⏳ <b>PENDING VERIFICATION (ACTION REQUIRED #${reminderIndex})</b>`
-    : `Status: ⏳ <b>PENDING MANUAL VERIFICATION</b>`;
-
-  const messageText = `
-${headerTitle}
-━━━━━━━━━━━━━━━━━━━━━
-📋 <b>Order Ref:</b> <code>${safeRefId}</code>
-👤 <b>Customer:</b> <b>${safeName}</b>
-📧 <b>Delivery Email:</b> <code>${safeEmail}</code>
-📱 <b>Customer Phone:</b> <code>${safePhone}</code>
-━━━━━━━━━━━━━━━━━━━━━
-📦 <b>Product:</b> ${safeProduct}
-⏳ <b>Duration:</b> ${safeDuration}
-🪑 <b>Seats/Qty:</b> ${safeQuantity} Seat(s)
-💰 <b>Total Amount:</b> <b>${safeTotalPrice}</b>${couponLine}
-━━━━━━━━━━━━━━━━━━━━━
-💳 <b>Payment Gateway:</b> <b>${safeGateway}</b>
-📤 <b>Sender Number:</b> <code>${safeSender}</code>
-📥 <b>Receiver Number:</b> <code>${safeReceiver}</code>
-🔑 <b>Transaction ID (TrxID):</b> <code>${safeTrxId}</code>
-⏰ <b>Time:</b> ${new Date().toLocaleString('en-GB', { timeZone: 'Asia/Dhaka' })}
-━━━━━━━━━━━━━━━━━━━━━
-${statusLine}
-`.trim();
-
   try {
-    const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    const response = await fetch('/api/order/submit', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        chat_id: targetChatId,
-        text: messageText,
-        parse_mode: 'HTML',
-        reply_markup: {
-          inline_keyboard: [
-            [
-              { text: "✅ Confirm (বৈধ)", callback_data: `confirm_${orderPayload.refId}` },
-              { text: "❌ Invalid (ভুল TrxID)", callback_data: `invalid_${orderPayload.refId}` }
-            ]
-          ]
-        }
+        name: orderPayload.name,
+        email: orderPayload.email,
+        phone: orderPayload.phone,
+        duration: orderPayload.duration,
+        quantity: orderPayload.quantity,
+        paymentMethod: orderPayload.paymentMethod,
+        senderNumber: orderPayload.senderNumber,
+        trxId: orderPayload.trxId,
+        couponCode: orderPayload.couponApplied,
+        requirements: orderPayload.requirements,
+        options
       })
     });
 
-    const result = await response.json();
-    if (!result.ok) {
-      console.warn("Telegram sendMessage error:", result);
-      return { 
-        success: false, 
-        reason: result.description?.includes('chat not found') ? 'CHAT_NOT_FOUND' : 'API_ERROR',
-        description: result.description,
-        data: result 
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        success: true,
+        refId: data.refId,
+        pricing: data.pricing,
+        status: data.status || 'PENDING',
+        data
       };
     }
 
-    return { 
-      success: true, 
-      data: result,
-      messageId: result.result?.message_id || null
+    // Handle specific server-side errors
+    const errorData = await response.json().catch(() => ({}));
+    if (response.status === 409) {
+      return {
+        success: false,
+        reason: 'DUPLICATE_TRX_ID',
+        error: errorData.error || 'This TrxID was already submitted for an existing order.'
+      };
+    }
+
+    if (response.status === 429) {
+      return {
+        success: false,
+        reason: 'RATE_LIMITED',
+        error: errorData.error || 'Rate limit reached. Please wait a few moments.'
+      };
+    }
+
+    return {
+      success: false,
+      reason: errorData.reason || 'SERVER_ERROR',
+      error: errorData.error || errorData.details?.join(', ') || 'Failed to submit order to server.'
     };
   } catch (err) {
-    console.error("Error dispatching order to Telegram:", err);
-    return { success: false, error: err };
+    // If running in purely static local Vite dev mode without Vercel serverless functions:
+    if (import.meta.env.DEV) {
+      console.warn('[DEV MOCK] Backend /api/order/submit not available in static dev server. Simulating order dispatch.');
+      return {
+        success: true,
+        refId: orderPayload.refId || `SOFT-DEV-${Date.now().toString().slice(-6)}`,
+        status: 'PENDING',
+        mock: true
+      };
+    }
+
+    return {
+      success: false,
+      reason: 'NETWORK_ERROR',
+      error: 'Network error connecting to payment verification service.'
+    };
   }
 };
 
 /**
- * Acknowledges a Telegram callback query to clear button loading state
- */
-export const answerTelegramCallback = async (callbackQueryId, text = "Status updated") => {
-  if (!TELEGRAM_BOT_TOKEN || !callbackQueryId) return;
-  try {
-    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/answerCallbackQuery`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        callback_query_id: callbackQueryId,
-        text: text,
-        show_alert: false
-      })
-    });
-  } catch (err) {
-    // Ignore expired or already answered callback errors
-  }
-};
-
-/**
- * Updates inline buttons on the Telegram notification message to reflect current status
- */
-export const updateTelegramMessageStatus = async (chatId, messageId, status, orderRefId) => {
-  if (!TELEGRAM_BOT_TOKEN || !chatId || !messageId) return;
-  try {
-    const isConfirmed = status === 'CONFIRMED';
-    const inline_keyboard = isConfirmed
-      ? [
-          [
-            { text: "✅ Confirmed (যাচাই সম্পন্ন)", callback_data: `confirmed_done_${orderRefId}` },
-            { text: "🔄 ভুল হলে Invalid করুন", callback_data: `invalid_${orderRefId}` }
-          ]
-        ]
-      : [
-          [
-            { text: "❌ Invalid TrxID (বাতিল)", callback_data: `invalid_done_${orderRefId}` },
-            { text: "🔄 সঠিক হলে Confirm করুন", callback_data: `confirm_${orderRefId}` }
-          ]
-        ];
-
-    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageReplyMarkup`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        message_id: messageId,
-        reply_markup: { inline_keyboard }
-      })
-    });
-  } catch (err) {
-    console.error("Error updating Telegram message markup:", err);
-  }
-};
-
-// Set to avoid redundant callback acknowledgments
-const processedCallbacks = new Set();
-
-/**
- * Polls Telegram updates to check if the admin clicked Confirm or Invalid
- * for a specific order reference ID.
- * Returns: { status: 'PENDING' | 'CONFIRMED' | 'INVALID', verifiedBy?: string, verifiedAt?: Date }
+ * Checks order verification status via backend API (/api/order/verify)
+ * Shielded from client-side Telegram polling.
  */
 export const checkOrderStatusFromTelegram = async (orderRefId) => {
-  if (!orderRefId || !TELEGRAM_BOT_TOKEN) {
+  if (!orderRefId) {
     return { status: 'PENDING' };
   }
 
   try {
-    const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`);
-    const data = await res.json();
-
-    if (data.ok && Array.isArray(data.result)) {
-      const cleanTargetRef = String(orderRefId).trim().toUpperCase();
-
-      // Traverse backwards from newest update to find the latest action on this order
-      for (let i = data.result.length - 1; i >= 0; i--) {
-        const update = data.result[i];
-        const cb = update.callback_query;
-        if (!cb || !cb.data) continue;
-
-        const dataStr = String(cb.data).trim().toUpperCase();
-        const isConfirm = dataStr === `CONFIRM_${cleanTargetRef}` || dataStr === `CONFIRMED_DONE_${cleanTargetRef}`;
-        const isInvalid = dataStr === `INVALID_${cleanTargetRef}` || dataStr === `INVALID_DONE_${cleanTargetRef}`;
-
-        if (isConfirm || isInvalid) {
-          const finalStatus = isConfirm ? 'CONFIRMED' : 'INVALID';
-
-          // Acknowledge callback and update buttons in Telegram if not yet processed
-          if (!processedCallbacks.has(cb.id)) {
-            processedCallbacks.add(cb.id);
-            answerTelegramCallback(
-              cb.id,
-              isConfirm ? `✅ Order #${orderRefId} Confirmed!` : `❌ Order #${orderRefId} marked as Invalid!`
-            ).catch(() => {});
-
-            if (cb.message?.chat?.id && cb.message?.message_id) {
-              updateTelegramMessageStatus(
-                cb.message.chat.id,
-                cb.message.message_id,
-                finalStatus,
-                orderRefId
-              ).catch(() => {});
-            }
-          }
-
-          return {
-            status: finalStatus,
-            verifiedBy: cb.from?.first_name || 'Admin',
-            verifiedAt: new Date(cb.message?.date ? cb.message.date * 1000 : Date.now()),
-            note: isConfirm
-              ? "Payment verified by administrator on Telegram."
-              : "Transaction ID was marked invalid by administrator on Telegram."
-          };
-        }
-      }
+    const response = await fetch(`/api/order/verify?ref=${encodeURIComponent(orderRefId)}`);
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        status: data.status || 'PENDING',
+        verifiedBy: data.verifiedBy || 'Admin',
+        verifiedAt: data.verifiedAt ? new Date(data.verifiedAt) : null,
+        note: data.note || null
+      };
     }
   } catch (err) {
-    console.error("Error checking order status from Telegram:", err);
+    // Fallback in local development preview
+    if (import.meta.env.DEV) {
+      return { status: 'PENDING' };
+    }
   }
 
   return { status: 'PENDING' };

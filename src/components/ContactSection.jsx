@@ -50,7 +50,7 @@ export default function ContactSection() {
                 <a
                   href={`https://wa.me/${t.contact.whatsappValue.replace(/[^0-9]/g, '')}`}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:underline"
                 >
                   <span>{t.contact.whatsappBtn} →</span>
