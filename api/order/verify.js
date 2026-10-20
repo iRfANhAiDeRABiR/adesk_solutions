@@ -6,6 +6,7 @@
 
 import fs from 'node:fs';
 import { OrderStateMachine } from '../_lib/store.js';
+import { dispatchCapiPurchaseForOrder } from '../_lib/metaCapi.js';
 import { checkRateLimit, updateTelegramMessageRemark } from '../_lib/security.js';
 
 function getTelegramConfig() {
@@ -95,6 +96,11 @@ export default async function handler(req, res) {
       success: true,
       refId: order.refId,
       status: order.status,
+      purchaseEventId: order.purchaseEventId || `purchase_${order.refId}`,
+      totalPrice: order.finalTotalPrice,
+      product: order.product,
+      quantity: order.quantity,
+      currency: 'BDT',
       verifiedAt: order.verifiedAt,
       verifiedBy: order.verifiedBy,
       note: order.verificationNote

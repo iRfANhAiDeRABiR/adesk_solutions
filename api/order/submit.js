@@ -116,7 +116,13 @@ export default async function handler(req, res) {
         paymentMethod: input.paymentMethod,
         senderNumber: input.senderNumber,
         trxId: input.trxId,
-        requirements: input.requirements
+        requirements: input.requirements,
+        clientIp,
+        userAgent: req.headers['user-agent'] || '',
+        fbp: input.fbp,
+        fbc: input.fbc,
+        eventSourceUrl: input.eventSourceUrl || req.headers['referer'] || 'https://adesk.solutionsbd.com/#payment',
+        consentGranted: input.consentGranted !== false
       });
 
       if (!registration.success) {

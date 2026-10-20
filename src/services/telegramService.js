@@ -61,6 +61,10 @@ export const sendOrderToTelegram = async (orderPayload, options = {}) => {
         trxId: orderPayload.trxId,
         couponCode: orderPayload.couponApplied,
         requirements: orderPayload.requirements,
+        fbp: orderPayload.fbp,
+        fbc: orderPayload.fbc,
+        eventSourceUrl: orderPayload.eventSourceUrl,
+        consentGranted: orderPayload.consentGranted,
         options
       })
     });
@@ -134,6 +138,11 @@ export const checkOrderStatusFromTelegram = async (orderRefId) => {
       const data = await response.json();
       return {
         status: data.status || 'PENDING',
+        purchaseEventId: data.purchaseEventId || null,
+        totalPrice: data.totalPrice || null,
+        product: data.product || null,
+        quantity: data.quantity || 1,
+        currency: data.currency || 'BDT',
         verifiedBy: data.verifiedBy || 'Admin',
         verifiedAt: data.verifiedAt ? new Date(data.verifiedAt) : null,
         note: data.note || null

@@ -25,7 +25,7 @@ import {
   Sparkles,
   RotateCcw
 } from 'lucide-react';
-import { trackAddPaymentInfo, trackPurchase, trackContact } from '../../services/pixelService';
+import { trackAddPaymentInfo, trackPurchase, trackContact, getBrowserFbpCookie, getBrowserFbcCookie } from '../../services/pixelService';
 
 export default function PaymentGatewayPage({ order, onCancel }) {
   const method = order?.paymentMethod || 'Bkash'; // 'Bkash' | 'Nagad' | 'Rocket'
@@ -179,7 +179,10 @@ export default function PaymentGatewayPage({ order, onCancel }) {
       receiverNumber: currentGateway.receiverNumber,
       trxId: cleanTrx,
       status: "PENDING_VERIFICATION",
-      submittedAt: new Date().toISOString()
+      submittedAt: new Date().toISOString(),
+      fbp: getBrowserFbpCookie(),
+      fbc: getBrowserFbcCookie(),
+      eventSourceUrl: typeof window !== 'undefined' ? window.location.href : 'https://adesk.solutionsbd.com/#payment'
     };
 
     // Store in localStorage for status lookup / persistence
@@ -193,9 +196,8 @@ export default function PaymentGatewayPage({ order, onCancel }) {
     lastSubmittedPayloadRef.current = customerPayload;
     verificationStatusRef.current = 'PENDING';
 
-    // Track payment method submission (Meta Pixel AddPaymentInfo, NOT Purchase)
+    // Note: AddPaymentInfo milestone was tracked when selecting gateway and entering phone
     // Purchase event is strictly deferred until administrator verification is confirmed
-    trackAddPaymentInfo(method);
     setVerificationStatus('PENDING');
     setStep(3);
 
@@ -243,7 +245,13 @@ export default function PaymentGatewayPage({ order, onCancel }) {
             // Verified Purchase Tracking: Meta Pixel Purchase event fires ONLY after administrator confirmation
             if (res.status === 'CONFIRMED' && !hasTrackedPurchaseRef.current) {
               hasTrackedPurchaseRef.current = true;
-              trackPurchase(lastSubmittedPayloadRef.current || order);
+              trackPurchase({
+                ...(lastSubmittedPayloadRef.current || order),
+                purchaseEventId: res.purchaseEventId,
+                totalPrice: res.totalPrice || (lastSubmittedPayloadRef.current || order)?.totalPrice,
+                product: res.product || (lastSubmittedPayloadRef.current || order)?.product,
+                quantity: res.quantity || (lastSubmittedPayloadRef.current || order)?.quantity
+              }, { eventID: res.purchaseEventId });
               try {
                 localStorage.removeItem('softwaresolutions_last_submission');
               } catch (e) {}
@@ -319,7 +327,13 @@ export default function PaymentGatewayPage({ order, onCancel }) {
 
           if (liveCheck.status === 'CONFIRMED' && !hasTrackedPurchaseRef.current) {
             hasTrackedPurchaseRef.current = true;
-            trackPurchase(lastSubmittedPayloadRef.current || order);
+            trackPurchase({
+                ...(lastSubmittedPayloadRef.current || order),
+                purchaseEventId: liveCheck.purchaseEventId,
+                totalPrice: liveCheck.totalPrice || (lastSubmittedPayloadRef.current || order)?.totalPrice,
+                product: liveCheck.product || (lastSubmittedPayloadRef.current || order)?.product,
+                quantity: liveCheck.quantity || (lastSubmittedPayloadRef.current || order)?.quantity
+              }, { eventID: liveCheck.purchaseEventId });
             try {
               localStorage.removeItem('softwaresolutions_last_submission');
             } catch (e) {}
