@@ -203,8 +203,10 @@ export default function PaymentGatewayPage({ order, onCancel }) {
     setTelegramStatus('sending');
     const teleRes = await sendOrderToTelegram(customerPayload);
     if (teleRes.success) {
-      if (teleRes.refId && teleRes.refId !== targetRef) {
-        setActiveRefId(teleRes.refId);
+      const confirmedRef = teleRes.refId || targetRef;
+      setActiveRefId(confirmedRef);
+      if (lastSubmittedPayloadRef.current) {
+        lastSubmittedPayloadRef.current.refId = confirmedRef;
       }
       setTelegramStatus('sent');
     } else if (teleRes.reason === 'DUPLICATE_TRX_ID') {
@@ -369,6 +371,7 @@ export default function PaymentGatewayPage({ order, onCancel }) {
       };
 
       reminderCount++;
+      if (payload) payload.refId = ref;
       console.log(`📨 [Telegram Reminder #${reminderCount}/${maxReminders}] Resending alert for #${ref}...`);
 
       try {

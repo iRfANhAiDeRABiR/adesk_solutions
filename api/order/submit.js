@@ -1,6 +1,7 @@
 /**
  * Serverless API: /api/order/submit
  * Secure Order Submission and Authoritative Payment Verification Dispatch
+ * Supports: Initial submissions + 15s Recurring Admin Reminders
  */
 
 import fs from 'node:fs';
@@ -42,21 +43,28 @@ export default async function handler(req, res) {
     });
   }
 
-  // Rate Limiting: 10 submissions per 5 minutes per client IP
-  const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
-  const rateLimit = checkRateLimit(`submit_${clientIp}`, 10, 5 * 60 * 1000);
-  if (!rateLimit.allowed) {
-    return res.status(429).json({
-      success: false,
-      error: 'Too many order submissions. Please wait a few minutes before trying again.',
-      retryAfterMs: rateLimit.retryAfterMs
-    });
-  }
-
   try {
     const rawBody = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    const isReminder = Boolean(rawBody?.options?.isReminder);
+    const targetRef = rawBody?.refId ? String(rawBody.refId).trim().toUpperCase() : null;
 
-    // 1. Strict Input Validation
+    // Rate Limiting: 10 initial submissions / 25 reminders per 5 minutes per client IP
+    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
+    const rateLimitKey = isReminder ? `reminder_${clientIp}` : `submit_${clientIp}`;
+    const rateLimitLimit = isReminder ? 25 : 10;
+    const rateLimit = checkRateLimit(rateLimitKey, rateLimitLimit, 5 * 60 * 1000);
+
+    if (!rateLimit.allowed) {
+      return res.status(429).json({
+        success: false,
+        error: isReminder
+          ? 'Too many reminders dispatched. Cooldown in progress.'
+          : 'Too many order submissions. Please wait a few minutes before trying again.',
+        retryAfterMs: rateLimit.retryAfterMs
+      });
+    }
+
+    // 1. Input Validation
     const validation = validateOrderInput(rawBody);
     if (!validation.isValid) {
       return res.status(400).json({
@@ -71,39 +79,56 @@ export default async function handler(req, res) {
     // 2. Authoritative Price Recalculation (Server-Side Source of Truth)
     const pricing = calculateAuthoritativePrice(input.duration, input.quantity, input.couponCode);
 
-    // 3. Generate Unpredictable Reference ID (ignore client-supplied refId for security)
-    const orderRef = generateOrderRef();
+    let orderRef = targetRef;
 
-    // 4. Register in Order State Machine & Check Duplicate TrxID
-    const registration = OrderStateMachine.createOrder({
-      refId: orderRef,
-      name: input.name,
-      email: input.email,
-      phone: input.phone,
-      product: input.product,
-      duration: pricing.duration,
-      quantity: pricing.quantity,
-      baseUnitPrice: pricing.baseUnitPrice,
-      baseTotalPrice: pricing.baseTotalPrice,
-      finalTotalPrice: pricing.finalTotalPrice,
-      displayPrice: pricing.displayPrice,
-      couponApplied: pricing.couponApplied,
-      discountAmount: pricing.discountAmount,
-      paymentMethod: input.paymentMethod,
-      senderNumber: input.senderNumber,
-      trxId: input.trxId,
-      requirements: input.requirements
-    });
+    // 3. Handle Reminder vs New Order Submission
+    if (isReminder && targetRef) {
+      const existing = OrderStateMachine.getOrder(targetRef);
+      if (existing && existing.status !== OrderStateMachine.STATUS.PENDING) {
+        return res.status(200).json({
+          success: true,
+          refId: targetRef,
+          status: existing.status,
+          isReminder: true,
+          message: 'Order is no longer pending verification.'
+        });
+      }
+      orderRef = targetRef;
+    } else {
+      // Generate new unpredictable reference ID for new order
+      orderRef = targetRef || generateOrderRef();
 
-    if (!registration.success) {
-      return res.status(409).json({
-        success: false,
-        reason: registration.reason,
-        error: registration.error
+      // Register in Order State Machine & Check Duplicate TrxID
+      const registration = OrderStateMachine.createOrder({
+        refId: orderRef,
+        name: input.name,
+        email: input.email,
+        phone: input.phone,
+        product: input.product,
+        duration: pricing.duration,
+        quantity: pricing.quantity,
+        baseUnitPrice: pricing.baseUnitPrice,
+        baseTotalPrice: pricing.baseTotalPrice,
+        finalTotalPrice: pricing.finalTotalPrice,
+        displayPrice: pricing.displayPrice,
+        couponApplied: pricing.couponApplied,
+        discountAmount: pricing.discountAmount,
+        paymentMethod: input.paymentMethod,
+        senderNumber: input.senderNumber,
+        trxId: input.trxId,
+        requirements: input.requirements
       });
+
+      if (!registration.success) {
+        return res.status(409).json({
+          success: false,
+          reason: registration.reason,
+          error: registration.error
+        });
+      }
     }
 
-    // 5. Send Notification to Telegram Bot (Server-to-Telegram Privately)
+    // 4. Send Notification to Telegram Bot (Server-to-Telegram Privately)
     let telegramDispatched = false;
     let telegramError = null;
 
@@ -122,12 +147,23 @@ export default async function handler(req, res) {
       const safeSender = escapeTelegramHtml(input.senderNumber);
       const safeTrxId = escapeTelegramHtml(input.trxId);
 
+      const reminderIndex = rawBody?.options?.reminderIndex || 1;
+      const maxReminders = rawBody?.options?.maxReminders || 8;
+
+      const headerTitle = isReminder
+        ? `⚠️ <b>URGENT REMINDER (#${reminderIndex}/${maxReminders})</b>\n🔔 <b>ORDER AWAITING CONFIRMATION</b>`
+        : `🔔 <b>NEW SOFTWARE SOLUTIONS BD ORDER</b>`;
+
+      const statusLine = isReminder
+        ? `Status: ⏳ <b>PENDING VERIFICATION (ACTION REQUIRED #${reminderIndex})</b>`
+        : `Status: ⏳ <b>PENDING MANUAL VERIFICATION</b>`;
+
       const couponLine = pricing.couponApplied
         ? `\n🏷️ <b>Coupon:</b> <code>${escapeTelegramHtml(pricing.couponApplied)}</code> (-10%, saved ৳ ${pricing.discountAmount})`
         : '';
 
       const messageText = `
-🔔 <b>NEW SOFTWARE SOLUTIONS BD ORDER</b>
+${headerTitle}
 ━━━━━━━━━━━━━━━━━━━━━
 📋 <b>Order Ref:</b> <code>${safeRefId}</code>
 👤 <b>Customer:</b> <b>${safeName}</b>
@@ -144,7 +180,7 @@ export default async function handler(req, res) {
 🔑 <b>Transaction ID:</b> <code>${safeTrxId}</code>
 ⏰ <b>Time:</b> ${new Date().toLocaleString('en-GB', { timeZone: 'Asia/Dhaka' })}
 ━━━━━━━━━━━━━━━━━━━━━
-Status: ⏳ <b>PENDING MANUAL VERIFICATION</b>
+${statusLine}
       `.trim();
 
       try {
@@ -178,11 +214,12 @@ Status: ⏳ <b>PENDING MANUAL VERIFICATION</b>
       telegramError = 'TELEGRAM_BOT_TOKEN or TELEGRAM_ADMIN_CHAT_ID not configured on server';
     }
 
-    // 6. Return response to browser (Without any secret disclosure)
+    // 5. Return response to browser
     return res.status(200).json({
       success: true,
       refId: orderRef,
       status: 'PENDING',
+      isReminder,
       pricing: {
         duration: pricing.duration,
         quantity: pricing.quantity,
@@ -192,7 +229,9 @@ Status: ⏳ <b>PENDING MANUAL VERIFICATION</b>
       },
       telegramDispatched,
       telegramError: telegramDispatched ? null : telegramError,
-      message: 'Order submitted successfully and awaiting administrator payment verification.'
+      message: isReminder
+        ? `Reminder #${rawBody?.options?.reminderIndex || 1} sent to administrator.`
+        : 'Order submitted successfully and awaiting administrator payment verification.'
     });
   } catch (err) {
     return res.status(500).json({

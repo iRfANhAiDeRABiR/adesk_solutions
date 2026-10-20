@@ -50,6 +50,7 @@ export const sendOrderToTelegram = async (orderPayload, options = {}) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        refId: orderPayload.refId,
         name: orderPayload.name,
         email: orderPayload.email,
         phone: orderPayload.phone,
