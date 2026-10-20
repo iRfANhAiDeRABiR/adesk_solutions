@@ -27,6 +27,9 @@ export const setMarketingConsent = (granted) => {
     if (window.fbq) {
       window.fbq('consent', granted ? 'grant' : 'revoke');
     }
+    if (granted && !window._fbq_initialized) {
+      initFacebookPixel();
+    }
   } catch (e) {}
 };
 
@@ -100,7 +103,7 @@ export const initFacebookPixel = () => {
   if (!isConsentGranted()) return;
 
   // Prevent multiple initializations
-  if (window.fbq) return;
+  if (window._fbq_initialized) return;
 
   /* eslint-disable */
   (function(f, b, e, v, n, t, s) {
@@ -123,8 +126,15 @@ export const initFacebookPixel = () => {
 
   if (FB_PIXEL_ID) {
     window.fbq('init', FB_PIXEL_ID);
+    window._fbq_initialized = true;
+    // Initial PageView upon initialization
+    trackPageView();
   }
 };
+
+// Internal PageView deduplication cache
+let lastTrackedPage = null;
+let lastTrackedTime = 0;
 
 /**
  * Safe wrapper to send standard or custom Meta Pixel and Google Tag Manager conversion events
@@ -133,6 +143,11 @@ export const initFacebookPixel = () => {
 export const trackPixelEvent = (eventName, params = {}, options = {}) => {
   if (typeof window === 'undefined') return;
   if (!isConsentGranted()) return;
+
+  if (eventName === 'PageView') {
+    trackPageView();
+    return;
+  }
 
   const eventID = options.eventID || params.eventID || generateEventId(eventName.toLowerCase());
 
@@ -193,9 +208,44 @@ export const trackPixelEvent = (eventName, params = {}, options = {}) => {
 
 /**
  * 1. Track Page Views
+ * Dispatches standard Meta Pixel PageView and GTM page_view with deduplication against rapid duplicate triggers.
  */
-export const trackPageView = () => {
-  trackPixelEvent('PageView');
+export const trackPageView = (url) => {
+  if (typeof window === 'undefined') return;
+  if (!isConsentGranted()) return;
+
+  const currentTarget = url || (window.location.pathname + (window.location.search || '') + (window.location.hash || ''));
+  const now = Date.now();
+
+  // Deduplicate rapid duplicate PageView calls (e.g. init + React StrictMode mount within 1000ms)
+  if (lastTrackedPage === currentTarget && (now - lastTrackedTime) < 1000) {
+    return;
+  }
+  lastTrackedPage = currentTarget;
+  lastTrackedTime = now;
+
+  console.log(
+    `%c[Meta Event Fired] %cPageView`,
+    'color: #06b6d4; font-weight: bold;',
+    'color: #10b981; font-weight: bold;',
+    { page: currentTarget }
+  );
+
+  // 1. Standard Meta Pixel PageView
+  if (window.fbq) {
+    window.fbq('track', 'PageView');
+  }
+
+  // 2. Google Tag Manager / GA4 dataLayer
+  try {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: 'page_view',
+      page_location: window.location.href,
+      page_path: window.location.pathname + window.location.hash,
+      page_title: document.title
+    });
+  } catch (err) {}
 };
 
 /**
