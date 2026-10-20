@@ -235,6 +235,7 @@ During this audit on branch `security-audit-fix`:
 6. `.gitignore` — Added explicit whitelist rule `!.env.example`.
 7. `package.json` — Added `"test": "node --test tests/**/*.test.js"`.
 8. `src/components/ContactSection.jsx` & `FloatingContactButton.jsx` — Enforced `rel="noopener noreferrer"`.
+9. `public/404.html` & `src/components/NotFoundPage.jsx` — Confirmed included and verified across both static edge delivery and client-side SPA routing.
 
 ---
 
@@ -276,18 +277,19 @@ Automated test execution using Node.js native test runner (`npm test`):
 ✔ Telegram Integration & Callback Security Tests (2.63ms)
 
 ▶ Input Validation & Sanitization Security Tests
-  ✔ Test 5: Malformed phone and email inputs are strictly rejected (1.38ms)
-  ✔ Test 6: XSS payload handling and safe Telegram HTML escaping (0.15ms)
-  ✔ Test 7: Invalid transaction ID formats are strictly rejected (0.20ms)
-✔ Input Validation & Sanitization Security Tests (2.45ms)
+  ✔ Test 5: Malformed phone and email inputs are strictly rejected (1.02ms)
+  ✔ Test 6: XSS payload handling and safe Telegram HTML escaping (0.22ms)
+  ✔ Test 7: Invalid transaction ID formats are strictly rejected (0.17ms)
+  ✔ Test 21: 404 error page & scanner bot protection verification (0.55ms)
+✔ Input Validation & Sanitization Security Tests (2.81ms)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ℹ Total Tests: 20
+ℹ Total Tests: 21
 ℹ Suites: 6
-ℹ Passed: 20
+ℹ Passed: 21
 ℹ Failed: 0
 ℹ Skipped: 0
-ℹ Total Duration: 141.86ms
+ℹ Total Duration: 141.78ms
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -312,6 +314,7 @@ Automated test execution using Node.js native test runner (`npm test`):
 18. **Telegram API failure:** **PASSED**
 19. **Rate limiting and abuse:** **PASSED**
 20. **Privacy and sensitive-data leakage:** **PASSED**
+21. **404 error page & scanner bot protection:** **PASSED** (Verified `public/404.html`, `src/components/NotFoundPage.jsx`, and `vercel.json` rewrites)
 
 ---
 

@@ -1,5 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import { validateOrderInput, escapeTelegramHtml } from '../../api/_lib/security.js';
 
 describe('Input Validation & Sanitization Security Tests', () => {
@@ -81,6 +83,31 @@ describe('Input Validation & Sanitization Security Tests', () => {
       trxId: 'RC123'
     });
     assert.strictEqual(rocketInvalid.isValid, false, 'Rocket TrxID under 8 characters must be rejected');
+  });
+
+  it('Test 21: 404 error page & scanner bot protection verification', () => {
+    // 1. Verify standalone static 404.html
+    const public404 = path.resolve('public/404.html');
+    assert.ok(fs.existsSync(public404), 'public/404.html must exist for static edge delivery');
+    const htmlContent = fs.readFileSync(public404, 'utf-8');
+    assert.ok(htmlContent.includes('404'), '404.html must contain 404 code');
+    assert.ok(htmlContent.includes('Software Solutions BD'), '404.html must contain Software Solutions BD branding');
+
+    // 2. Verify React SPA NotFoundPage component
+    const react404 = path.resolve('src/components/NotFoundPage.jsx');
+    assert.ok(fs.existsSync(react404), 'src/components/NotFoundPage.jsx must exist for SPA routing');
+
+    // 3. Verify vercel.json rewrites sensitive scanner probes to /404.html
+    const vercelConfig = JSON.parse(fs.readFileSync('vercel.json', 'utf-8'));
+    const rewrites = vercelConfig.rewrites || [];
+    assert.ok(
+      rewrites.some(r => r.source.includes('.env') && r.destination === '/404.html'),
+      'vercel.json must rewrite .env probes to 404.html'
+    );
+    assert.ok(
+      rewrites.some(r => r.source.includes('.git') && r.destination === '/404.html'),
+      'vercel.json must rewrite .git probes to 404.html'
+    );
   });
 });
 
