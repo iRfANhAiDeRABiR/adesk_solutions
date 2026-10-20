@@ -220,15 +220,30 @@
   </div>
 
   <script>
-    // Smart base path detection for subdirectory hosting (e.g. GitHub Pages)
     (function() {
-      var segments = window.location.pathname.split('/').filter(Boolean);
-      if (segments.length > 0 && segments[0] !== '404' && segments[0] !== '404.html') {
-        var root = '/' + segments[0] + '/';
-        var home = document.getElementById('home-link');
-        var logo = document.getElementById('logo-link');
-        if (home) home.href = root;
-        if (logo) logo.href = root;
+      // Safe root URL determination: always navigate directly to homepage
+      var rootUrl = '/';
+      var path = window.location.pathname || '';
+      if (path.indexOf('/project_03') === 0) {
+        rootUrl = '/project_03/';
+      }
+
+      var home = document.getElementById('home-link');
+      var logo = document.getElementById('logo-link');
+
+      if (home) {
+        home.href = rootUrl;
+        home.addEventListener('click', function(e) {
+          e.preventDefault();
+          window.location.href = rootUrl;
+        });
+      }
+      if (logo) {
+        logo.href = rootUrl;
+        logo.addEventListener('click', function(e) {
+          e.preventDefault();
+          window.location.href = rootUrl;
+        });
       }
     })();
   </script>

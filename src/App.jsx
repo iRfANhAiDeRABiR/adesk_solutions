@@ -106,9 +106,15 @@ function AppContent() {
   const handleGoHome = (targetHash = '') => {
     const basePath = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
     const rootUrl = basePath || '/';
+    const targetUrl = rootUrl + (targetHash ? targetHash : '');
+
+    // If currently on a subpath or 404 URL, cleanly navigate to root to ensure fresh load
     if (window.location.pathname !== '/' && window.location.pathname !== rootUrl) {
-      window.history.pushState({}, '', rootUrl + (targetHash ? targetHash : ''));
-    } else {
+      window.location.href = targetUrl;
+      return;
+    }
+
+    if (targetHash) {
       window.location.hash = targetHash;
     }
     setCurrentPath(rootUrl);

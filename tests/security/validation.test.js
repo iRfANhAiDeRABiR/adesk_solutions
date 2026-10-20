@@ -106,6 +106,9 @@ describe('Input Validation & Sanitization Security Tests', () => {
     const htmlContent = fs.readFileSync(public404, 'utf-8');
     assert.ok(htmlContent.includes('404'), '404.html must contain 404 code');
     assert.ok(htmlContent.includes('Software Solutions BD'), '404.html must contain Software Solutions BD branding');
+    assert.ok(htmlContent.includes('id="home-link"'), '404.html must contain home-link button');
+    assert.ok(htmlContent.includes('href="/"'), '404.html must link directly to root');
+    assert.ok(!htmlContent.includes('segments[0]'), '404.html must not contain buggy path segment hijacking');
 
     // 2. Verify React SPA NotFoundPage component
     const react404 = path.resolve('src/components/NotFoundPage.jsx');
