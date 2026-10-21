@@ -27,8 +27,16 @@ const ALLOWED_CAPI_RELAY_EVENTS = new Set([
 ]);
 
 export default async function handler(req, res) {
+  // CORS Preflight handling
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    return res.status(204).end();
+  }
+
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
+    res.setHeader('Allow', 'POST, OPTIONS');
     return res.status(405).json({
       success: false,
       error: 'Method Not Allowed. Use POST.'
@@ -48,7 +56,8 @@ export default async function handler(req, res) {
 
   try {
     const rawBody = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const { eventName, eventId, eventSourceUrl, userData: clientUserData, customData, consentGranted } = rawBody || {};
+    const { eventName, eventId, eventSourceUrl, userData: clientUserData, customData, consentGranted, testEventCode: clientTestEventCode } = rawBody || {};
+    const testEventCode = clientTestEventCode || rawBody?.test_event_code || process.env.META_TEST_EVENT_CODE || null;
 
     // 2. Privacy & Marketing Consent Verification
     if (consentGranted === false) {
@@ -132,7 +141,7 @@ export default async function handler(req, res) {
     };
 
     // 6. Send to Meta Graph API
-    const result = await sendMetaCapiEvent(capiPayload);
+    const result = await sendMetaCapiEvent(capiPayload, { testEventCode });
 
     return res.status(200).json({
       success: result.success,

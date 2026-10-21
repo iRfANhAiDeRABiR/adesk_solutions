@@ -210,6 +210,7 @@ export default function PaymentGatewayPage({ order, onCancel }) {
       submittedAt: new Date().toISOString(),
       fbp: getBrowserFbpCookie(),
       fbc: getBrowserFbcCookie(),
+      testEventCode: typeof window !== 'undefined' ? (sessionStorage.getItem('meta_test_event_code') || null) : null,
       eventSourceUrl: typeof window !== 'undefined' ? window.location.href : 'https://adesk.solutionsbd.com/#payment'
     };
 

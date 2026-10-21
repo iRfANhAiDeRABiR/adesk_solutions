@@ -153,7 +153,8 @@ export function validateOrderInput(input) {
       fbp: typeof input?.fbp === 'string' && input.fbp.startsWith('fb.') ? input.fbp.trim() : null,
       fbc: typeof input?.fbc === 'string' && input.fbc.startsWith('fb.') ? input.fbc.trim() : null,
       eventSourceUrl: typeof input?.eventSourceUrl === 'string' ? input.eventSourceUrl.trim() : null,
-      consentGranted: input?.consentGranted !== false
+      consentGranted: input?.consentGranted !== false,
+      testEventCode: typeof input?.testEventCode === 'string' ? input.testEventCode.trim().slice(0, 50) : null
     }
   };
 }

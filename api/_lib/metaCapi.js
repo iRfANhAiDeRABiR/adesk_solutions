@@ -235,9 +235,10 @@ export async function sendMetaCapiEvent(events, options = {}) {
     data: eventsArray
   };
 
-  // Attach test_event_code if configured in staging/test mode
-  if (config.testEventCode) {
-    requestBody.test_event_code = config.testEventCode;
+  // Attach test_event_code if configured in staging/test mode or passed in options
+  const activeTestCode = options.testEventCode || eventsArray[0]?.test_event_code || config.testEventCode;
+  if (activeTestCode && typeof activeTestCode === 'string') {
+    requestBody.test_event_code = activeTestCode.trim();
   }
 
   const timeoutMs = options.timeoutMs || 5000;
