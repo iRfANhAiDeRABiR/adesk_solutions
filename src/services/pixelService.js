@@ -162,6 +162,11 @@ export const trackPixelEvent = (eventName, params = {}, options = {}) => {
     return;
   }
 
+  // Ensure Meta Pixel is loaded
+  if (typeof window !== 'undefined' && !window.fbq && !window._fbq_initialized) {
+    initFacebookPixel();
+  }
+
   const eventID = options.eventID || params.eventID || generateEventId(eventName.toLowerCase());
 
   // Console logging for verification
@@ -265,14 +270,40 @@ export const trackPageView = (url) => {
  * 2. Track Product / Subscription View (ViewContent)
  * Dispatched to both Browser Pixel and Server CAPI with shared eventID
  */
-export const trackViewContent = (productName, price) => {
-  const numericPrice = typeof price === 'number' ? price : (parseFloat(String(price).replace(/[^0-9.]/g, '')) || 649);
+// Internal deduplication caches for conversion events
+let lastViewContentKey = null;
+let lastViewContentTime = 0;
+
+let lastInitiateCheckoutKey = null;
+let lastInitiateCheckoutTime = 0;
+
+let lastAddPaymentInfoKey = null;
+let lastAddPaymentInfoTime = 0;
+
+export const trackViewContent = (productName = 'Autodesk All Apps', price = 649) => {
+  if (typeof window === 'undefined') return;
+  if (!isConsentGranted()) return;
+
+  const numericPrice = typeof price === 'number'
+    ? price
+    : (parseFloat(String(price).replace(/[^0-9.]/g, '')) || 649);
+  const name = productName || 'Autodesk All Apps';
+  const key = `${name}_${numericPrice}`;
+  const now = Date.now();
+
+  // Deduplicate rapid identical calls (e.g. React StrictMode mount / re-renders within 2000ms)
+  if (lastViewContentKey === key && (now - lastViewContentTime) < 2000) {
+    return;
+  }
+  lastViewContentKey = key;
+  lastViewContentTime = now;
+
   const eventID = generateEventId('vc');
 
   trackPixelEvent(
     'ViewContent',
     {
-      content_name: productName || 'Autodesk All Apps',
+      content_name: name,
       content_category: 'Software Subscription',
       content_ids: ['AUTODESK-ALL-APPS'],
       content_type: 'product',
@@ -287,20 +318,38 @@ export const trackViewContent = (productName, price) => {
  * 3. Track Checkout Initiation (InitiateCheckout)
  * Dispatched to both Browser Pixel and Server CAPI with shared eventID
  */
-export const trackInitiateCheckout = (orderPayload) => {
+export const trackInitiateCheckout = (orderPayload = {}) => {
+  if (typeof window === 'undefined') return;
+  if (!isConsentGranted()) return;
+
   const numericPrice = typeof orderPayload?.rawPrice === 'string'
-    ? parseFloat(orderPayload.rawPrice.replace(/[^0-9.]/g, ''))
-    : (orderPayload?.price || 649);
+    ? (parseFloat(orderPayload.rawPrice.replace(/[^0-9.]/g, '')) || 649)
+    : (typeof orderPayload?.price === 'number'
+      ? orderPayload.price
+      : (parseFloat(String(orderPayload?.totalPrice || 649).replace(/[^0-9.]/g, '')) || 649));
+
+  const name = orderPayload?.product || 'Autodesk All Apps';
+  const qty = Number(orderPayload?.quantity) || 1;
+  const key = `${name}_${numericPrice}_${qty}`;
+  const now = Date.now();
+
+  // Deduplicate rapid identical calls (e.g. OrderSection submit followed by PaymentGatewayPage mount within 3000ms)
+  if (lastInitiateCheckoutKey === key && (now - lastInitiateCheckoutTime) < 3000) {
+    return;
+  }
+  lastInitiateCheckoutKey = key;
+  lastInitiateCheckoutTime = now;
 
   const eventID = generateEventId('ic');
 
   trackPixelEvent(
     'InitiateCheckout',
     {
-      content_name: orderPayload?.product || 'Autodesk All Apps',
+      content_name: name,
+      content_category: 'Software Subscription',
       content_ids: ['AUTODESK-ALL-APPS'],
       content_type: 'product',
-      num_items: Number(orderPayload?.quantity) || 1,
+      num_items: qty,
       value: numericPrice,
       currency: 'BDT'
     },
@@ -318,21 +367,38 @@ export const trackInitiateCheckout = (orderPayload) => {
  * Dispatched to both Browser Pixel and Server CAPI with shared eventID
  */
 export const trackAddPaymentInfo = (gatewayName, price, customerInfo = {}) => {
-  const numericPrice = typeof price === 'number' ? price : (parseFloat(String(price || 649).replace(/[^0-9.]/g, '')) || 649);
+  if (typeof window === 'undefined') return;
+  if (!isConsentGranted()) return;
+
+  const numericPrice = typeof price === 'number'
+    ? price
+    : (parseFloat(String(price || 649).replace(/[^0-9.]/g, '')) || 649);
+  const method = gatewayName || 'Bkash';
+  const phone = customerInfo?.phone || '';
+  const key = `${method}_${numericPrice}_${phone}`;
+  const now = Date.now();
+
+  // Deduplicate rapid identical calls (within 3000ms)
+  if (lastAddPaymentInfoKey === key && (now - lastAddPaymentInfoTime) < 3000) {
+    return;
+  }
+  lastAddPaymentInfoKey = key;
+  lastAddPaymentInfoTime = now;
+
   const eventID = generateEventId('api');
 
   trackPixelEvent(
     'AddPaymentInfo',
     {
       content_category: 'Payment Gateway',
-      payment_method: gatewayName || 'Bkash',
+      payment_method: method,
       value: numericPrice,
       currency: 'BDT'
     },
     {
       eventID,
-      email: customerInfo.email,
-      phone: customerInfo.phone
+      email: customerInfo?.email,
+      phone: customerInfo?.phone
     }
   );
 };

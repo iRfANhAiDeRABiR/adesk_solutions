@@ -3,12 +3,14 @@ import SectionHeading from './common/SectionHeading';
 import { catalogCategories } from '../data/autodeskFullCatalogData';
 import { useLanguage } from '../context/LanguageContext';
 import { Sparkles, ArrowRight } from 'lucide-react';
+import { trackViewContent, trackInitiateCheckout } from '../services/pixelService';
 
 export default function ProductCategories() {
   const { lang, handleSelectProduct } = useLanguage();
   const [activeCategoryFilter, setActiveCategoryFilter] = useState('all');
 
   const onCardClick = (app, category) => {
+    trackViewContent(app.name || category.title, 649);
     handleSelectProduct({
       id: category.id,
       name: category.title,
@@ -149,6 +151,7 @@ export default function ProductCategories() {
 
           <a
             href="#order"
+            onClick={() => trackInitiateCheckout({ product: 'Autodesk All Apps', rawPrice: '649', quantity: 1 })}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md hover:brightness-110 transition-all flex-shrink-0"
           >
             <span>Order Autodesk Software</span>

@@ -3,13 +3,17 @@ import SectionHeading from './common/SectionHeading';
 import { subscriptionOptions, autodeskAllAppsPlans } from '../data/autodeskData';
 import { useLanguage } from '../context/LanguageContext';
 import { Clock, Check, ArrowRight } from 'lucide-react';
-import { trackViewContent } from '../services/pixelService';
+import { trackViewContent, trackInitiateCheckout } from '../services/pixelService';
 
 export default function SubscriptionPlans() {
   const { lang, t, selectedProduct, handleSelectProduct } = useLanguage();
 
+  React.useEffect(() => {
+    trackViewContent('Autodesk All Apps Subscription Plans', 649);
+  }, []);
+
   return (
-    <section className="py-16 md:py-24 relative bg-slate-50 border-t border-slate-200">
+    <section id="plans" className="py-16 md:py-24 relative bg-slate-50 border-t border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <SectionHeading
           badge="Subscription Tiers"
@@ -80,7 +84,11 @@ export default function SubscriptionPlans() {
                 <button
                   onClick={() => {
                     const matchedProduct = autodeskAllAppsPlans.find((p) => p.duration === plan.name) || selectedProduct;
-                    trackViewContent(plan.name, plan.price);
+                    trackInitiateCheckout({
+                      product: matchedProduct?.name || plan.name,
+                      rawPrice: String(plan.price),
+                      quantity: 1
+                    });
                     handleSelectProduct(matchedProduct, plan.name);
                   }}
                   className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl text-xs font-bold bg-slate-100 group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-cyan-500 text-slate-800 group-hover:text-white border border-slate-200 group-hover:border-transparent transition-all duration-200 shadow-sm"

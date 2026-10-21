@@ -21,7 +21,7 @@ export const AUTHORIZED_COUPONS = {
 
 // Strict TrxID validation patterns per payment provider
 export const TRX_PATTERNS = {
-  Bkash: /^DJ[A-Z0-9]{8}$/i,     // 10 chars, starts with DJ (e.g. DJ1A2B3C4D)
+  Bkash: /^[A-Z0-9]{8,12}$/i,    // 8 to 12 chars alphanumeric (typically 10 chars, e.g. BL84J2K9LM)
   Nagad: /^[A-Z0-9]{8,12}$/i,    // 8 to 12 chars alphanumeric
   Rocket: /^[A-Z0-9]{6,12}$/i    // 6 to 12 chars alphanumeric
 };
@@ -98,9 +98,18 @@ export function validateOrderInput(input) {
     errors.push('A valid 11-digit Bangladeshi mobile number is required for customer contact.');
   }
 
-  // Payment Method validation
-  const paymentMethod = input?.paymentMethod || 'Bkash';
-  if (!['Bkash', 'Nagad', 'Rocket'].includes(paymentMethod)) {
+  // Payment Method validation (case-insensitive normalization)
+  let paymentMethod = 'Bkash';
+  const rawMethod = typeof input?.paymentMethod === 'string' ? input.paymentMethod.trim().toLowerCase() : '';
+  if (rawMethod === 'bkash') {
+    paymentMethod = 'Bkash';
+  } else if (rawMethod === 'nagad') {
+    paymentMethod = 'Nagad';
+  } else if (rawMethod === 'rocket') {
+    paymentMethod = 'Rocket';
+  } else if (!input?.paymentMethod) {
+    paymentMethod = 'Bkash';
+  } else {
     errors.push('Payment method must be one of: Bkash, Nagad, Rocket.');
   }
 
@@ -115,7 +124,7 @@ export function validateOrderInput(input) {
   const trxPattern = TRX_PATTERNS[paymentMethod] || TRX_PATTERNS.Bkash;
   if (!rawTrx || !trxPattern.test(rawTrx)) {
     if (paymentMethod === 'Bkash') {
-      errors.push('bKash TrxID must be exactly 10 alphanumeric characters starting with DJ (e.g. DJ1A2B3C4D).');
+      errors.push('bKash TrxID must be 8 to 12 alphanumeric characters (e.g. BL84J2K9LM).');
     } else if (paymentMethod === 'Nagad') {
       errors.push('Nagad TrxID must be 8 to 12 alphanumeric characters.');
     } else {

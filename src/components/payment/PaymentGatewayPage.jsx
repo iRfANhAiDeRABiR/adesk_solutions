@@ -166,15 +166,11 @@ export default function PaymentGatewayPage({ order, onCancel }) {
 
     // Strict TrxID Validation per Payment Method
     if (method === 'Bkash') {
-      if (!cleanTrx.startsWith('DJ')) {
-        setError('অবৈধ bKash TrxID! বিকাশ ট্রানজেকশন আইডি অবশ্যই DJ দিয়ে শুরু হতে হবে (যেমন: DJXXXXXXXX)।');
+      if (cleanTrx.length < 8 || cleanTrx.length > 12) {
+        setError('দয়া করে সঠিক বিকাশ Transaction ID (TrxID) লিখুন (সাধারণত ১০ অক্ষরের হয়)।');
         return;
       }
-      if (cleanTrx.length !== 10) {
-        setError(`সঠিক ১০ অক্ষরের bKash TrxID দিন (যেমন: DJXXXXXXXX)। আপনি ${cleanTrx.length} অক্ষর দিয়েছেন।`);
-        return;
-      }
-      if (!/^DJ[A-Z0-9]{8}$/.test(cleanTrx)) {
+      if (!/^[A-Z0-9]{8,12}$/.test(cleanTrx)) {
         setError('bKash TrxID শুধুমাত্র ইংরেজি বর্ণ ও সংখ্যা দিয়ে গঠিত হতে হবে।');
         return;
       }
@@ -774,8 +770,8 @@ export default function PaymentGatewayPage({ order, onCancel }) {
                     setTrxId(e.target.value.toUpperCase());
                     if (error) setError('');
                   }}
-                  placeholder={method === 'Bkash' ? "e.g. DJ1A92X4Z0" : method === 'Nagad' ? "e.g. 72AK94X2" : "e.g. 2938471928"}
-                  maxLength={method === 'Bkash' ? 10 : 25}
+                  placeholder={method === 'Bkash' ? "e.g. BL84J2K9LM" : method === 'Nagad' ? "e.g. 72AK94X2" : "e.g. 2938471928"}
+                  maxLength={25}
                   className="w-full px-4 py-3 rounded-xl bg-slate-50 border-2 border-slate-300 focus:border-slate-800 text-slate-900 font-mono font-bold tracking-wider text-base focus:bg-white focus:outline-none transition-all uppercase"
                 />
                 
