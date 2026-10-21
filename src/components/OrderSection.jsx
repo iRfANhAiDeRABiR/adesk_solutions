@@ -161,7 +161,7 @@ export default function OrderSection() {
       const generatedRef = `SOFT-ATD-${Math.floor(100000 + Math.random() * 900000)}`;
       const orderPayload = {
         refId: generatedRef,
-        product: lang === 'bn' ? currentPlan.shortNameBn : currentPlan.shortName,
+        product: 'Autodesk All Apps',
         planFullName: lang === 'bn' ? currentPlan.nameBn : currentPlan.name,
         duration: currentPlan.duration,
         quantity: parsedQty,

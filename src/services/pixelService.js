@@ -60,6 +60,30 @@ export const getBrowserFbcCookie = () => {
 };
 
 /**
+ * Extracts and caches Meta test_event_code for controlled staging / Test Events verification.
+ * Automatically checks URL search params and persists in sessionStorage during the session.
+ */
+export const getTestEventCode = () => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('test_event_code') || params.get('test_code');
+    if (code) {
+      if (code === 'clear' || code === 'none') {
+        sessionStorage.removeItem('meta_test_event_code');
+        return null;
+      }
+      const clean = code.trim();
+      sessionStorage.setItem('meta_test_event_code', clean);
+      return clean;
+    }
+    return sessionStorage.getItem('meta_test_event_code') || null;
+  } catch (e) {
+    return null;
+  }
+};
+
+/**
  * Generates a stable unique event ID for browser/server deduplication
  */
 export const generateEventId = (prefix = 'evt') => {
@@ -77,18 +101,21 @@ export const relayEventToCapi = async (payload) => {
     if (typeof window === 'undefined') return;
     if (!isConsentGranted()) return;
 
-    const bodyStr = JSON.stringify(payload);
-    if (navigator.sendBeacon) {
-      const blob = new Blob([bodyStr], { type: 'application/json' });
-      navigator.sendBeacon('/api/tracking/event', blob);
-    } else {
-      fetch('/api/tracking/event', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: bodyStr,
-        keepalive: true
-      }).catch(() => {});
-    }
+    const testEventCode = getTestEventCode();
+    const enrichedPayload = {
+      ...payload,
+      testEventCode: testEventCode || undefined
+    };
+
+    const bodyStr = JSON.stringify(enrichedPayload);
+
+    // Use fetch with keepalive: true to prevent Blob preflight issues
+    fetch('/api/tracking/event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: bodyStr,
+      keepalive: true
+    }).catch(() => {});
   } catch (e) {
     // Non-fatal tracking relay error
   }
@@ -292,7 +319,7 @@ export const trackViewContent = (productName = 'Autodesk All Apps', price = 649)
   const now = Date.now();
 
   // Deduplicate rapid identical calls (e.g. React StrictMode mount / re-renders within 2000ms)
-  if (lastViewContentKey === key && (now - lastViewContentTime) < 2000) {
+  if (lastViewContentKey === key && (now - lastViewContentTime) < 3000) {
     return;
   }
   lastViewContentKey = key;
@@ -390,7 +417,10 @@ export const trackAddPaymentInfo = (gatewayName, price, customerInfo = {}) => {
   trackPixelEvent(
     'AddPaymentInfo',
     {
+      content_name: 'Autodesk All Apps',
       content_category: 'Payment Gateway',
+      content_ids: ['AUTODESK-ALL-APPS'],
+      content_type: 'product',
       payment_method: method,
       value: numericPrice,
       currency: 'BDT'

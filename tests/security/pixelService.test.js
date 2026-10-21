@@ -137,7 +137,6 @@ describe('Meta Facebook Pixel Client Service & Configuration Tests', () => {
   it('10. SubscriptionPlans, Navbar, and ProductCategories wire conversion events to user actions', () => {
     const plansPath = path.resolve('src/components/SubscriptionPlans.jsx');
     const plansContent = fs.readFileSync(plansPath, 'utf8');
-    assert.ok(plansContent.includes('trackViewContent'), 'SubscriptionPlans must call trackViewContent');
     assert.ok(plansContent.includes('trackInitiateCheckout'), 'SubscriptionPlans must call trackInitiateCheckout on plan CTA');
 
     const navbarPath = path.resolve('src/components/Navbar.jsx');

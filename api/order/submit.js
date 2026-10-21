@@ -122,7 +122,8 @@ export default async function handler(req, res) {
         fbp: input.fbp,
         fbc: input.fbc,
         eventSourceUrl: input.eventSourceUrl || req.headers['referer'] || 'https://adesk.solutionsbd.com/#payment',
-        consentGranted: input.consentGranted !== false
+        consentGranted: input.consentGranted !== false,
+        testEventCode: input.testEventCode || rawBody?.testEventCode || null
       });
 
       if (!registration.success) {

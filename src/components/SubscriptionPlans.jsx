@@ -8,9 +8,7 @@ import { trackViewContent, trackInitiateCheckout } from '../services/pixelServic
 export default function SubscriptionPlans() {
   const { lang, t, selectedProduct, handleSelectProduct } = useLanguage();
 
-  React.useEffect(() => {
-    trackViewContent('Autodesk All Apps Subscription Plans', 649);
-  }, []);
+
 
   return (
     <section id="plans" className="py-16 md:py-24 relative bg-slate-50 border-t border-slate-200">
