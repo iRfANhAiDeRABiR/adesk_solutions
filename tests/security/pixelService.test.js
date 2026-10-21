@@ -3,7 +3,7 @@
  * Test Runner: Node.js Test Runner (node --test)
  */
 
-import { describe, it, beforeEach } from 'node:test';
+import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -39,11 +39,19 @@ describe('Meta Facebook Pixel Client Service & Configuration Tests', () => {
     );
   });
 
-  it('3. index.html does NOT inject a duplicate <script> tag for Facebook Pixel', () => {
+  it('3. index.html contains official Meta Pixel <script> code in <head> for immediate detector discovery', () => {
     const indexContent = fs.readFileSync(indexPath, 'utf8');
     assert.ok(
-      !indexContent.includes('connect.facebook.net/en_US/fbevents.js'),
-      'index.html should not duplicate the fbevents.js script tag (managed dynamically by pixelService)'
+      indexContent.includes('connect.facebook.net/en_US/fbevents.js'),
+      'index.html head must contain fbevents.js script for immediate extension detection'
+    );
+    assert.ok(
+      indexContent.includes(`fbq('init', '${EXPECTED_PIXEL_ID}')`),
+      `index.html head script must initialize Pixel ID ${EXPECTED_PIXEL_ID}`
+    );
+    assert.ok(
+      indexContent.includes("fbq('track', 'PageView')"),
+      'index.html head script must fire base PageView'
     );
   });
 
@@ -82,14 +90,13 @@ describe('Meta Facebook Pixel Client Service & Configuration Tests', () => {
       'pixelService must use softwaresolutions_marketing_consent localStorage key'
     );
     assert.ok(
-      serviceContent.includes("window.fbq('consent', 'revoke')") || serviceContent.includes("window.fbq('consent', granted ? 'grant' : 'revoke')"),
+      serviceContent.includes("window.fbq('consent', 'revoke')"),
       'pixelService must communicate consent changes to Meta Pixel via fbq consent command'
     );
   });
 
   it('7. pixelService.js implements deduplication for all 5 conversion events', () => {
     const serviceContent = fs.readFileSync(pixelServicePath, 'utf8');
-    // All 5 events must be defined
     assert.ok(serviceContent.includes('trackViewContent'), 'Must export trackViewContent');
     assert.ok(serviceContent.includes('trackInitiateCheckout'), 'Must export trackInitiateCheckout');
     assert.ok(serviceContent.includes('trackAddPaymentInfo'), 'Must export trackAddPaymentInfo');
@@ -97,7 +104,6 @@ describe('Meta Facebook Pixel Client Service & Configuration Tests', () => {
     assert.ok(serviceContent.includes('trackContact'), 'Must export trackContact');
     assert.ok(serviceContent.includes('trackPageView'), 'Must export trackPageView');
 
-    // Event ID and CAPI relay
     assert.ok(serviceContent.includes('relayEventToCapi'), 'Must export relayEventToCapi');
     assert.ok(serviceContent.includes('generateEventId'), 'Must export generateEventId');
   });

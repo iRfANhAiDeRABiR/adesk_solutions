@@ -100,10 +100,21 @@ export const relayEventToCapi = async (payload) => {
 export const initFacebookPixel = () => {
   if (typeof window === 'undefined') return;
   if (!FB_PIXEL_ID) return;
-  if (!isConsentGranted()) return;
+  if (!isConsentGranted()) {
+    if (window.fbq) {
+      window.fbq('consent', 'revoke');
+    }
+    return;
+  }
 
   // Prevent multiple initializations
   if (window._fbq_initialized) return;
+
+  // If already loaded/initialized by index.html snippet
+  if (window.fbq && typeof window.fbq === 'function') {
+    window._fbq_initialized = true;
+    return;
+  }
 
   /* eslint-disable */
   (function(f, b, e, v, n, t, s) {
@@ -127,14 +138,16 @@ export const initFacebookPixel = () => {
   if (FB_PIXEL_ID) {
     window.fbq('init', FB_PIXEL_ID);
     window._fbq_initialized = true;
-    // Initial PageView upon initialization
     trackPageView();
   }
 };
 
 // Internal PageView deduplication cache
-let lastTrackedPage = null;
-let lastTrackedTime = 0;
+// Seed with current page location so initial load from index.html isn't duplicated
+let lastTrackedPage = typeof window !== 'undefined'
+  ? (window.location.pathname + (window.location.search || '') + (window.location.hash || ''))
+  : null;
+let lastTrackedTime = Date.now();
 
 /**
  * Safe wrapper to send standard or custom Meta Pixel and Google Tag Manager conversion events
