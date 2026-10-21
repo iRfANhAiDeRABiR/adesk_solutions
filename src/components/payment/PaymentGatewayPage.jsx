@@ -25,7 +25,7 @@ import {
   Sparkles,
   RotateCcw
 } from 'lucide-react';
-import { trackAddPaymentInfo, trackPurchase, trackContact, getBrowserFbpCookie, getBrowserFbcCookie } from '../../services/pixelService';
+import { trackInitiateCheckout, trackAddPaymentInfo, trackPurchase, trackContact, getBrowserFbpCookie, getBrowserFbcCookie } from '../../services/pixelService';
 
 export default function PaymentGatewayPage({ order, onCancel }) {
   const method = order?.paymentMethod || 'Bkash'; // 'Bkash' | 'Nagad' | 'Rocket'
@@ -95,6 +95,31 @@ export default function PaymentGatewayPage({ order, onCancel }) {
   verificationStatusRef.current = verificationStatus;
   const reminderTimerRef = useRef(null);
   const hasTrackedPurchaseRef = useRef(false);
+  const hasTrackedCheckoutRef = useRef(false);
+  const hasTrackedPaymentInfoRef = useRef(false);
+
+  // Ensure InitiateCheckout is tracked when entering the payment gateway
+  useEffect(() => {
+    if (step === 1 && !hasTrackedCheckoutRef.current && order) {
+      hasTrackedCheckoutRef.current = true;
+      trackInitiateCheckout(order);
+    }
+  }, [step, order]);
+
+  // Ensure AddPaymentInfo is tracked when on Step 2 (Send Money & TrxID)
+  useEffect(() => {
+    if (step === 2 && !hasTrackedPaymentInfoRef.current) {
+      hasTrackedPaymentInfoRef.current = true;
+      const numericPrice = typeof order?.price === 'number'
+        ? order.price
+        : (parseFloat(String(order?.totalPrice || order?.rawPrice || 649).replace(/[^0-9.]/g, '')) || 649);
+
+      trackAddPaymentInfo(method, numericPrice, {
+        email: order?.email,
+        phone: senderNumber || order?.phone
+      });
+    }
+  }, [step, method, order, senderNumber]);
 
   const handleSafeCancel = () => {
     try {
@@ -122,7 +147,14 @@ export default function PaymentGatewayPage({ order, onCancel }) {
       return;
     }
     setError('');
-    trackAddPaymentInfo(method);
+    const numericPrice = typeof order?.price === 'number'
+      ? order.price
+      : (parseFloat(String(order?.totalPrice || order?.rawPrice || 649).replace(/[^0-9.]/g, '')) || 649);
+    trackAddPaymentInfo(method, numericPrice, {
+      email: order?.email,
+      phone: cleanNum
+    });
+    hasTrackedPaymentInfoRef.current = true;
     setStep(2);
   };
 
