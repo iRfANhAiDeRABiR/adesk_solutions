@@ -12,6 +12,7 @@ describe('Meta Facebook Pixel Client Service & Configuration Tests', () => {
   const indexPath = path.resolve('index.html');
   const pixelServicePath = path.resolve('src/services/pixelService.js');
   const mainJsxPath = path.resolve('src/main.jsx');
+  const paymentPagePath = path.resolve('src/components/payment/PaymentGatewayPage.jsx');
 
   const EXPECTED_PIXEL_ID = '6925345297741031';
 
@@ -106,5 +107,21 @@ describe('Meta Facebook Pixel Client Service & Configuration Tests', () => {
 
     assert.ok(serviceContent.includes('relayEventToCapi'), 'Must export relayEventToCapi');
     assert.ok(serviceContent.includes('generateEventId'), 'Must export generateEventId');
+  });
+
+  it('8. PaymentGatewayPage triggers InitiateCheckout on step 1 and AddPaymentInfo on step 2', () => {
+    const pageContent = fs.readFileSync(paymentPagePath, 'utf8');
+    assert.ok(
+      pageContent.includes('trackInitiateCheckout'),
+      'PaymentGatewayPage must import and call trackInitiateCheckout'
+    );
+    assert.ok(
+      pageContent.includes('trackAddPaymentInfo'),
+      'PaymentGatewayPage must import and call trackAddPaymentInfo'
+    );
+    assert.ok(
+      pageContent.includes('trackPurchase'),
+      'PaymentGatewayPage must import and call trackPurchase'
+    );
   });
 });
