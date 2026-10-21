@@ -124,4 +124,30 @@ describe('Meta Facebook Pixel Client Service & Configuration Tests', () => {
       'PaymentGatewayPage must import and call trackPurchase'
     );
   });
+
+  it('9. App.jsx triggers ViewContent and InitiateCheckout based on hash routing and mount', () => {
+    const appPath = path.resolve('src/App.jsx');
+    const appContent = fs.readFileSync(appPath, 'utf8');
+    assert.ok(appContent.includes('trackViewContent'), 'App.jsx must import trackViewContent');
+    assert.ok(appContent.includes('trackInitiateCheckout'), 'App.jsx must import trackInitiateCheckout');
+    assert.ok(appContent.includes("newHash === '#order'"), 'App.jsx must detect #order hash navigation');
+    assert.ok(appContent.includes("newHash === '#collections'"), 'App.jsx must detect #collections hash navigation');
+  });
+
+  it('10. SubscriptionPlans, Navbar, and ProductCategories wire conversion events to user actions', () => {
+    const plansPath = path.resolve('src/components/SubscriptionPlans.jsx');
+    const plansContent = fs.readFileSync(plansPath, 'utf8');
+    assert.ok(plansContent.includes('trackViewContent'), 'SubscriptionPlans must call trackViewContent');
+    assert.ok(plansContent.includes('trackInitiateCheckout'), 'SubscriptionPlans must call trackInitiateCheckout on plan CTA');
+
+    const navbarPath = path.resolve('src/components/Navbar.jsx');
+    const navbarContent = fs.readFileSync(navbarPath, 'utf8');
+    assert.ok(navbarContent.includes('trackInitiateCheckout'), 'Navbar must call trackInitiateCheckout on Get Started CTAs');
+
+    const catPath = path.resolve('src/components/ProductCategories.jsx');
+    const catContent = fs.readFileSync(catPath, 'utf8');
+    assert.ok(catContent.includes('trackViewContent'), 'ProductCategories must call trackViewContent on card click');
+    assert.ok(catContent.includes('trackInitiateCheckout'), 'ProductCategories must call trackInitiateCheckout on catalog CTA');
+  });
 });
+

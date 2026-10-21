@@ -21,7 +21,7 @@ import FloatingContactButton from './components/FloatingContactButton';
 import PaymentGatewayPage from './components/payment/PaymentGatewayPage';
 import NotFoundPage from './components/NotFoundPage';
 import { useLanguage } from './context/LanguageContext';
-import { trackPageView } from './services/pixelService';
+import { trackPageView, trackViewContent, trackInitiateCheckout } from './services/pixelService';
 
 function LandingPage() {
   return (
@@ -90,11 +90,29 @@ function AppContent() {
 
   React.useEffect(() => {
     trackPageView();
+
     const handleNavigation = () => {
-      setCurrentPath(window.location.pathname);
-      setCurrentHash(window.location.hash);
+      const newPath = window.location.pathname;
+      const newHash = window.location.hash;
+      setCurrentPath(newPath);
+      setCurrentHash(newHash);
       trackPageView();
+
+      if (newHash === '#order') {
+        trackInitiateCheckout({ product: 'Autodesk All Apps', rawPrice: '649', quantity: 1 });
+      } else if (newHash === '#collections' || newHash === '#plans' || newHash === '' || newHash === '#hero') {
+        trackViewContent('Autodesk All Apps', 649);
+      }
     };
+
+    // Trigger ViewContent or InitiateCheckout on initial mount based on URL hash
+    const initialHash = window.location.hash;
+    if (initialHash === '#order') {
+      trackInitiateCheckout({ product: 'Autodesk All Apps', rawPrice: '649', quantity: 1 });
+    } else if (initialHash !== '#payment') {
+      trackViewContent('Autodesk All Apps', 649);
+    }
+
     window.addEventListener('hashchange', handleNavigation);
     window.addEventListener('popstate', handleNavigation);
     return () => {

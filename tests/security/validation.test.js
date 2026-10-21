@@ -53,20 +53,34 @@ describe('Input Validation & Sanitization Security Tests', () => {
   });
 
   it('Test 7: Invalid transaction ID formats are strictly rejected', () => {
-    // bKash: Must start with DJ and be 10 alphanumeric characters
-    const bkashWrongPrefix = validateOrderInput({
+    // bKash: 8 to 12 alphanumeric characters
+    const bkashShort = validateOrderInput({
       ...validBaseOrder,
       paymentMethod: 'Bkash',
-      trxId: 'AA1A2B3C4D'
+      trxId: 'BK123'
     });
-    assert.strictEqual(bkashWrongPrefix.isValid, false, 'bKash TrxID without DJ prefix must be rejected');
+    assert.strictEqual(bkashShort.isValid, false, 'bKash TrxID under 8 characters must be rejected');
 
-    const bkashWrongLength = validateOrderInput({
+    const bkashNonAlpha = validateOrderInput({
       ...validBaseOrder,
       paymentMethod: 'Bkash',
-      trxId: 'DJ1A2B3C'
+      trxId: 'BL84J2K9!@'
     });
-    assert.strictEqual(bkashWrongLength.isValid, false, 'bKash TrxID with wrong length must be rejected');
+    assert.strictEqual(bkashNonAlpha.isValid, false, 'Non-alphanumeric bKash TrxID must be rejected');
+
+    const bkashValidReal = validateOrderInput({
+      ...validBaseOrder,
+      paymentMethod: 'Bkash',
+      trxId: 'BL84J2K9LM'
+    });
+    assert.strictEqual(bkashValidReal.isValid, true, 'Valid real-world bKash TrxID (BL prefix) must be accepted');
+
+    const bkashDjValid = validateOrderInput({
+      ...validBaseOrder,
+      paymentMethod: 'Bkash',
+      trxId: 'DJ1A2B3C4D'
+    });
+    assert.strictEqual(bkashDjValid.isValid, true, '10-char alphanumeric bKash TrxID must be accepted');
 
     // Nagad: 8-12 characters
     const nagadInvalid = validateOrderInput({

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Logo from './common/Logo';
 import { useLanguage } from '../context/LanguageContext';
 import { Menu, X, Globe, ArrowRight, ShoppingBag } from 'lucide-react';
+import { trackInitiateCheckout } from '../services/pixelService';
 
 export default function Navbar() {
   const { lang, toggleLanguage, t } = useLanguage();
@@ -93,7 +94,10 @@ export default function Navbar() {
             {/* Primary CTA: Get Started */}
             <a
               href="#order"
-              onClick={(e) => handleNavClick(e, '#order')}
+              onClick={(e) => {
+                trackInitiateCheckout({ product: 'Autodesk All Apps', rawPrice: '649', quantity: 1 });
+                handleNavClick(e, '#order');
+              }}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500 text-white shadow-md hover:brightness-110 transition-all"
             >
               <span>{t.nav.getStarted}</span>
@@ -144,7 +148,10 @@ export default function Navbar() {
           <div className="pt-3 border-t border-slate-200 flex flex-col gap-2">
             <a
               href="#order"
-              onClick={(e) => handleNavClick(e, '#order')}
+              onClick={(e) => {
+                trackInitiateCheckout({ product: 'Autodesk All Apps', rawPrice: '649', quantity: 1 });
+                handleNavClick(e, '#order');
+              }}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md"
             >
               <ShoppingBag className="w-4 h-4" />

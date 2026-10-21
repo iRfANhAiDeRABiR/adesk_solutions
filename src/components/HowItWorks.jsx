@@ -2,6 +2,7 @@ import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { Shield3D } from './common/PaymentLogos';
 import { ArrowRight } from 'lucide-react';
+import { trackInitiateCheckout } from '../services/pixelService';
 
 export default function HowItWorks() {
   const { lang, t } = useLanguage();
@@ -124,6 +125,7 @@ export default function HowItWorks() {
         <div className="mt-12 text-center">
           <a
             href="#order"
+            onClick={() => trackInitiateCheckout({ product: 'Autodesk All Apps', rawPrice: '649', quantity: 1 })}
             className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500 text-white shadow-lg shadow-cyan-500/25 hover:brightness-110 hover:-translate-y-0.5 transition-all"
           >
             <span>{lang === 'bn' ? "অটোডেস্ক সফটওয়্যার অর্ডার করুন" : "Order Autodesk Software"}</span>
